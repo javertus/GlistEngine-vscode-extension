@@ -1,9 +1,12 @@
 # Change Log
 
-All notable changes to the "glist-engine-worker-extension" extension will be documented in this file.
+# 1.1.0
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## New
 
-## [Unreleased]
+- Feature: Installing Glist Engine
+- Some code changes and bug fixes
+
+# 1.0.0
 
 - Initial release

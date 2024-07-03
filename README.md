@@ -4,9 +4,11 @@ This extension includes a set of extensions for Glist development in Visual Stud
 * [CMake](https://marketplace.visualstudio.com/items?itemName=twxs.cmake)
 * [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
 
+This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEngine). 
+
 # Features
 
-- Installing Glist Engine Dependencies (Coming Soon) <br>
+- Installing the Glist Engine <br>
 - Updating the Glist Engine (Coming Soon) <br>
 - Installs the required extensions and creates the required workspace for Glist Engine<br>
 - Creates empty GlistApp by one click<br>
