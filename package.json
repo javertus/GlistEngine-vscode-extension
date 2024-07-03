@@ -1,0 +1,75 @@
+{
+  "name": "glist-engine-extension",
+  "displayName": "Glist Engine",
+  "description": "Configures the Visual Studio Code for Glist Engine and makes your job easier.",
+  "publisher": "javertus",
+  "icon": "images/icon.png",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/javertus/GlistEngine-vscode-extension.git"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": [
+    "Extension Packs",
+    "Education",
+    "Other"
+  ],
+  "extensionPack": [
+    "vadimcn.vscode-lldb",
+    "twxs.cmake",
+    "ms-vscode.cmake-tools",
+    "ms-vscode.cpptools"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "glist-engine-worker-extension.create-glistapp",
+        "title": "Glist Engine: Create new GlistApp"
+      },
+      {
+        "command": "glist-engine-worker-extension.workspace-update",
+        "title": "Glist Engine: Update Workspace"
+      },
+      {
+        "command": "glist-engine-worker-extension.reset",
+        "title": "Glist Engine: Reset Extension"
+      },
+      {
+        "command": "glist-engine-worker-extension.openWorkspace",
+        "title": "Glist Engine: Switch To Glist Engine Workspace"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.5",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^18.19.39",
+    "@types/vscode": "^1.82.0",
+    "@typescript-eslint/eslint-plugin": "^7.11.0",
+    "@typescript-eslint/parser": "^7.11.0",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.4.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.14",
+    "axios": "^1.7.2"
+  }
+}
