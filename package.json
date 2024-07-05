@@ -4,7 +4,7 @@
   "description": "Configures the Visual Studio Code for Glist Engine and makes your job easier.",
   "publisher": "javertus",
   "icon": "images/icon.png",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/javertus/GlistEngine-vscode-extension.git"
@@ -31,24 +31,36 @@
   "contributes": {
     "commands": [
       {
-        "command": "glist-engine-worker-extension.create-glistapp",
-        "title": "Glist Engine: Create new GlistApp"
+        "command": "glist-extension.create-glistapp",
+        "title": "Glist Engine: Create New Project"
       },
       {
-        "command": "glist-engine-worker-extension.workspace-update",
+        "command": "glist-extension.workspace-update",
         "title": "Glist Engine: Update Workspace"
       },
       {
-        "command": "glist-engine-worker-extension.reset",
+        "command": "glist-extension.reset",
         "title": "Glist Engine: Reset Extension"
       },
       {
-        "command": "glist-engine-worker-extension.openWorkspace",
+        "command": "glist-extension.openWorkspace",
         "title": "Glist Engine: Switch To Glist Engine Workspace"
       },
       {
-        "command": "glist-engine-worker-extension.installglistengine",
+        "command": "glist-extension.installglistengine",
         "title": "Glist Engine: Install Glist Engine"
+      },
+      {
+        "command": "glist-extension.deleteproject",
+        "title": "Glist Engine: Delete Project"
+      },
+      {
+        "command": "glist-extension.addcanvastoproject",
+        "title": "Glist Engine: Create New Canvas"
+      },
+      {
+        "command": "glist-extension.addclasstoproject",
+        "title": "Glist Engine: Create Empty Class"
       }
     ]
   },
@@ -66,6 +78,7 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "^18.19.39",
     "@types/vscode": "^1.82.0",
+    "@types/winreg": "^1.2.36",
     "@typescript-eslint/eslint-plugin": "^7.11.0",
     "@typescript-eslint/parser": "^7.11.0",
     "@vscode/test-cli": "^0.0.9",
@@ -76,6 +89,8 @@
   "dependencies": {
     "adm-zip": "^0.5.14",
     "axios": "^1.7.2",
-    "fs-extra": "^11.2.0"
+    "fs-extra": "^11.2.0",
+    "json5": "^2.2.3",
+    "rimraf": "^5.0.7"
   }
 }
