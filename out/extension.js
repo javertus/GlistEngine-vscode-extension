@@ -93,7 +93,7 @@ function CheckWorkspace(showErrorMessage = true) {
     return true;
 }
 async function CreateNewProject(projectName = undefined) {
-    if (!CheckWorkspace())
+    if (!CheckWorkspace() && !projectName)
         return;
     if (projectName == undefined) {
         projectName = await vscode.window.showInputBox({

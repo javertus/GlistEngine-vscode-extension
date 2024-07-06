@@ -71,7 +71,7 @@ function CheckWorkspace(showErrorMessage: boolean = true) {
 }
 
 async function CreateNewProject(projectName: any = undefined) {
-	if (!CheckWorkspace()) return;
+	if (!CheckWorkspace() && !projectName) return;
 	if (projectName == undefined) {
 		projectName = await vscode.window.showInputBox({
 			placeHolder: "Enter the name of new Project"

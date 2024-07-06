@@ -1,6 +1,12 @@
 # Change Log
 
-#1.2.2
+# 1.2.3
+
+## New
+
+- Minor bug fix
+
+# 1.2.2
 
 ## New
 
