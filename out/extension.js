@@ -84,7 +84,7 @@ function activate(context) {
 exports.activate = activate;
 function CheckWorkspace(showErrorMessage = true) {
     let folders = vscode.workspace.workspaceFolders;
-    let len = vscode.workspace.workspaceFolders?.length;
+    let len = folders?.length;
     if (!folders || !len || folders[len - 1].uri.fsPath.toLowerCase() != glistEnginePath.toLowerCase()) {
         if (showErrorMessage)
             vscode.window.showErrorMessage("You should switch to Glist workspace to do that.");
@@ -93,9 +93,12 @@ function CheckWorkspace(showErrorMessage = true) {
     return true;
 }
 async function CreateNewProject(projectName = undefined) {
-    if (!CheckWorkspace() && !projectName)
+    let forceCreate = false;
+    if (projectName)
+        forceCreate = true;
+    if (!CheckWorkspace(!forceCreate) && !forceCreate)
         return;
-    if (projectName == undefined) {
+    if (!forceCreate) {
         projectName = await vscode.window.showInputBox({
             placeHolder: "Enter the name of new Project"
         });
@@ -107,7 +110,7 @@ async function CreateNewProject(projectName = undefined) {
         fs.cpSync(path.join(extensionPath, 'GlistApp'), path.join(glistappsPath, projectName), { recursive: true });
         vscode.window.showInformationMessage('Created new Project.');
     }
-    await AddNewProjectToWorkspace(projectName);
+    await AddNewProjectToWorkspace(projectName, forceCreate);
     const filesToOpen = [
         path.join(glistappsPath, projectName, 'src', 'gCanvas.h'),
         path.join(glistappsPath, projectName, 'src', 'gCanvas.cpp')
@@ -118,13 +121,13 @@ async function CreateNewProject(projectName = undefined) {
         await vscode.window.showTextDocument(document, { preview: false });
     });
 }
-async function AddNewProjectToWorkspace(projectName) {
+async function AddNewProjectToWorkspace(projectName, forceCreate = false) {
     // Read the JSON file
-    if (!fs.existsSync(workspaceFilePath)) {
+    if (!fs.existsSync(workspaceFilePath) || forceCreate) {
         extensionJsonData.firstRun = false;
         extensionJsonData.secondRun = true;
         SaveExtensionJson();
-        UpdateWorkspace();
+        UpdateWorkspace(true);
         return;
     }
     const jsonString = fs.readFileSync(workspaceFilePath, 'utf-8');
@@ -160,8 +163,8 @@ async function DeleteProjectFromWorkspace(projectName) {
     await fs.writeFile(workspaceFilePath, JSON.stringify(jsonData, null, 2));
     vscode.window.showInformationMessage(`Deleted project '${projectName}' from workspace.`);
 }
-async function UpdateWorkspace() {
-    if (!CheckWorkspace())
+async function UpdateWorkspace(forceCreate = false) {
+    if (!CheckWorkspace(!forceCreate) && !forceCreate)
         return;
     try {
         let workspaceFolders = [];
@@ -193,7 +196,7 @@ async function LaunchWorkspace() {
         await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(workspaceFilePath), false);
     }
     else { // If no workspace file found, create one and launch the workspace
-        UpdateWorkspace();
+        UpdateWorkspace(true);
     }
 }
 function ResetExtension() {
@@ -502,6 +505,7 @@ async function FirstRunWorker() {
         extensionJsonData.installGlistEngine = false;
         SaveExtensionJson();
         await InstallGlistEngine();
+        return;
     }
     if (!fs.existsSync(path.join(extensionPath, "GlistApp"))) {
         await InstallGlistAppTemplate();
