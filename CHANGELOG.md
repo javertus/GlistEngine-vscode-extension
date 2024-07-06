@@ -1,5 +1,12 @@
 # Change Log
 
+#1.2.2
+
+## New
+
+- Fixed: After installing the engine, Visual Studio Code should be restarted manually because CMake cannot be found at path of old terminals.
+- Fixed bugs that occurred at version 1.2.1
+
 # 1.2.1
 
 ## New

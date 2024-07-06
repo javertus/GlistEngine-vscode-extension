@@ -34,7 +34,6 @@ const path = __importStar(require("path"));
 const adm_zip_1 = __importDefault(require("adm-zip"));
 const axios_1 = __importDefault(require("axios"));
 const json5_1 = __importDefault(require("json5"));
-const child_process_1 = require("child_process");
 const rimraf_1 = require("rimraf");
 const currentDirectory = process.cwd();
 const currentDrive = path.parse(currentDirectory).root;
@@ -60,21 +59,6 @@ function activate(context) {
     vscode.commands.registerCommand('glist-extension.workspace-update', async () => {
         await UpdateWorkspace();
     });
-    vscode.commands.registerCommand('glist-extension.openWorkspace', async () => {
-        await LaunchWorkspace();
-    });
-    vscode.commands.registerCommand('glist-extension.reset', async () => {
-        ResetExtension();
-    });
-    vscode.commands.registerCommand('glist-extension.installglistengine', async () => {
-        extensionJsonData.installGlistEngine = true;
-        SaveExtensionJson();
-        if (await updateVSCodeSettings())
-            return;
-        extensionJsonData.installGlistEngine = false;
-        SaveExtensionJson();
-        await InstallGlistEngine();
-    });
     vscode.commands.registerCommand('glist-extension.deleteproject', async () => {
         await DeleteProject();
     });
@@ -84,12 +68,33 @@ function activate(context) {
     vscode.commands.registerCommand('glist-extension.addclasstoproject', async () => {
         await AddClassToProject(path.join(extensionPath), "EmptyClass");
     });
+    vscode.commands.registerCommand('glist-extension.openWorkspace', async () => {
+        await LaunchWorkspace();
+    });
+    vscode.commands.registerCommand('glist-extension.installglistengine', async () => {
+        await InstallGlistEngine();
+    });
+    vscode.commands.registerCommand('glist-extension.reset', async () => {
+        ResetExtension();
+    });
     extensionPath = context.extensionPath;
     extensionDataFilePath = path.join(extensionPath, 'ExtensionData.json');
     FirstRunWorker();
 }
 exports.activate = activate;
+function CheckWorkspace(showErrorMessage = true) {
+    let folders = vscode.workspace.workspaceFolders;
+    let len = vscode.workspace.workspaceFolders?.length;
+    if (!folders || !len || folders[len - 1].uri.fsPath.toLowerCase() != glistEnginePath.toLowerCase()) {
+        if (showErrorMessage)
+            vscode.window.showErrorMessage("You should switch to Glist workspace to do that.");
+        return false;
+    }
+    return true;
+}
 async function CreateNewProject(projectName = undefined) {
+    if (!CheckWorkspace())
+        return;
     if (projectName == undefined) {
         projectName = await vscode.window.showInputBox({
             placeHolder: "Enter the name of new Project"
@@ -156,6 +161,8 @@ async function DeleteProjectFromWorkspace(projectName) {
     vscode.window.showInformationMessage(`Deleted project '${projectName}' from workspace.`);
 }
 async function UpdateWorkspace() {
+    if (!CheckWorkspace())
+        return;
     try {
         let workspaceFolders = [];
         getSubfolders(glistappsPath).map(folder => {
@@ -197,6 +204,12 @@ function ResetExtension() {
     vscode.commands.executeCommand('workbench.action.reloadWindow');
 }
 async function InstallGlistEngine() {
+    extensionJsonData.installGlistEngine = true;
+    SaveExtensionJson();
+    if (await updateVSCodeSettings())
+        return;
+    extensionJsonData.installGlistEngine = false;
+    SaveExtensionJson();
     const result = await vscode.window.showInformationMessage('This action will install the Glist Engine and its dependencies. Current Glist Engine installation in /glist folder will be modified if exist. Your projects and plugins will not affected. Do you want to continue?', { modal: true }, 'Yes', 'No');
     if (result == 'Yes') {
         vscode.window.withProgress({
@@ -211,7 +224,6 @@ async function InstallGlistEngine() {
             progress.report({ increment: 20 });
             await InstallCmake();
             progress.report({ increment: 20 });
-            AddPathToSystemEnvironment(path.join(glistZbinPath, "CMake", "bin"));
             await InstallClang();
             progress.report({ increment: 20 });
             await createEmptyProject();
@@ -236,7 +248,7 @@ function ExtractArchive(zipPath, dest, message) {
     vscode.window.showInformationMessage(message);
 }
 async function InstallEngine() {
-    vscode.window.showInformationMessage("Installing Engine ~8MB");
+    vscode.window.showInformationMessage("Installing Engine (~8MB)");
     const zipFilePath = path.join(tempPath, 'GlistEngine.zip');
     await DownloadFile(glistEngineUrl, zipFilePath);
     await fs.remove(path.join(glistPath, "GlistEngine"));
@@ -244,29 +256,25 @@ async function InstallEngine() {
     await fs.rename(path.join(glistPath, 'GlistEngine-main'), path.join(glistPath, 'GlistEngine'));
 }
 async function InstallCmake() {
-    vscode.window.showInformationMessage("Installing Cmake ~35MB");
+    vscode.window.showInformationMessage("Installing Cmake (~35MB)");
     const zipFilePath = path.join(tempPath, 'CMake.zip');
     await DownloadFile(glistCmakeUrl, zipFilePath);
     await fs.remove(path.join(glistZbinPath, 'CMake'));
     ExtractArchive(zipFilePath, glistZbinPath, "CMake Binaries Installed.");
 }
 async function InstallClang() {
-    vscode.window.showInformationMessage("Installing Clang Binaries ~400MB");
+    vscode.window.showInformationMessage("Installing Clang Binaries (~400MB)");
     const zipFilePath = path.join(tempPath, 'clang64.zip');
     await DownloadFile(glistClangUrl, zipFilePath);
     await fs.remove(path.join(glistZbinPath, 'clang64'));
     ExtractArchive(zipFilePath, glistZbinPath, "Clang Binaries Installed.");
 }
-function AddPathToSystemEnvironment(newPath) {
-    const command = `powershell.exe -Command "[Environment]::GetEnvironmentVariable('Path', 'User')"`;
-    //Removing the last index because it's space 
-    let currentPath = (0, child_process_1.execSync)(command, { encoding: 'utf-8' }).replace(/\n/g, '').slice(0, -1);
-    if (currentPath.endsWith(';'))
-        currentPath = currentPath.slice(0, -1);
-    if (!currentPath.includes(newPath)) {
-        const psCommand = `powershell -Command "[Environment]::SetEnvironmentVariable('Path', '${currentPath};${newPath}', [EnvironmentVariableTarget]::User)"`;
-        (0, child_process_1.execSync)(psCommand);
+function arraysUnion(a, b) {
+    const set = new Set(a);
+    for (const item of b) {
+        set.add(item);
     }
+    return Array.from(set);
 }
 async function updateVSCodeSettings() {
     const vscodeSettingsPath = path.join(process.env.HOME || process.env.USERPROFILE || '', 'AppData/Roaming/Code/User/settings.json' // This path might differ based on OS and VS Code distribution
@@ -274,18 +282,23 @@ async function updateVSCodeSettings() {
     let settings;
     const newSettings = {
         "extensions.ignoreRecommendations": true,
-        "cmake.options.statusBarVisibility": "visible",
+        /*"cmake.options.statusBarVisibility": "visible",
         "cmake.showOptionsMovedNotification": false,
-        "cmake.configureOnOpen": true,
+        "cmake.configureOnOpen": true,*/
         "security.workspace.trust.enabled": false,
         "security.workspace.trust.banner": "never",
         "security.workspace.trust.untrustedFiles": "open",
         "security.workspace.trust.startupPrompt": "never",
+        "C_Cpp.default.compilerPath": currentDrive.at(0) + ":\\dev\\glist\\zbin\\glistzbin-win64\\clang64\\bin\\clang++.exe",
         "C_Cpp.default.includePath": [
             "${workspaceFolder}/**",
-            "c:/dev/glist/GlistEngine/**",
-            "C:/dev/glist/zbin/glistzbin-win64/clang64/**",
-        ]
+            "${workspaceFolder}/../../glistplugins/**",
+            "${workspaceFolder}/../../GlistEngine/**",
+            "${workspaceFolder}/../../zbin/glistzbin-win64/clang64/include/**"
+        ],
+        "terminal.integrated.env.windows": {
+            "Path": "C:/dev/glist/zbin/glistzbin-win64/CMake/bin"
+        }
     };
     try {
         if (fs.existsSync(vscodeSettingsPath)) {
@@ -300,9 +313,29 @@ async function updateVSCodeSettings() {
         let isChanged = false;
         // Add or update settings
         for (const [key, value] of Object.entries(newSettings)) {
-            if (settings[key] !== value) {
-                settings[key] = value;
-                isChanged = true;
+            if (Array.isArray(value)) {
+                const currentArray = settings[key] || [];
+                const updatedArray = arraysUnion(currentArray, value);
+                if (currentArray.length !== updatedArray.length) {
+                    settings[key] = updatedArray;
+                    isChanged = true;
+                }
+            }
+            else if (typeof value === 'object' && value !== null) {
+                // Check for nested objects (e.g., terminal.integrated.env.windows)
+                settings[key] = settings[key] || {};
+                for (const [subKey, subValue] of Object.entries(value)) {
+                    if (!settings[key][subKey] || !settings[key][subKey].includes(subValue)) {
+                        settings[key][subKey] = settings[key][subKey] ? settings[key][subKey] + ';' + subValue : subValue;
+                        isChanged = true;
+                    }
+                }
+            }
+            else {
+                if (settings[key] !== value) {
+                    settings[key] = value;
+                    isChanged = true;
+                }
             }
         }
         if (isChanged) {
@@ -373,6 +406,8 @@ async function DeleteFolder(folderPath) {
     console.log(`Folder ${folderPath} deleted successfully.`);
 }
 async function DeleteProject() {
+    if (!CheckWorkspace())
+        return;
     let projectName = await vscode.window.showInputBox({
         placeHolder: "Enter the name of Project you want to delete"
     });
@@ -413,6 +448,8 @@ function checkPath(inputPath, message = undefined, errorMessageIfNotExist = true
     return false;
 }
 async function AddClassToProject(baseFilePath, fileBaseName) {
+    if (!CheckWorkspace())
+        return;
     let projectName = await vscode.window.showInputBox({
         placeHolder: "Enter the name of project you want to create new class"
     });
@@ -459,7 +496,8 @@ async function FirstRunWorker() {
         SaveExtensionJson();
         vscode.window.showInformationMessage("Project Deleted.");
     }
-    await CloseNonExistentFileTabs();
+    if (CheckWorkspace(false))
+        await CloseNonExistentFileTabs();
     if (extensionJsonData.installGlistEngine) {
         extensionJsonData.installGlistEngine = false;
         SaveExtensionJson();
@@ -469,15 +507,15 @@ async function FirstRunWorker() {
         await InstallGlistAppTemplate();
     }
     if (extensionJsonData.firstRun) {
-        vscode.window.withProgress({
+        await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             cancellable: false,
             title: 'Installing required extensions for Glist Engine. Please wait...'
         }, async (progress) => {
             progress.report({ increment: 0 });
             await InstallExtensions(progress);
-            await CreateWorkspace();
         });
+        await CreateWorkspace();
     }
     else if (extensionJsonData.secondRun) {
         await OpenFiles();
@@ -485,7 +523,7 @@ async function FirstRunWorker() {
 }
 function CheckJsonFile() {
     if (!fs.existsSync(extensionDataFilePath)) {
-        let initialData = { firstRun: true, secondRun: true, installGlistEngine: false, deleteFolder: undefined };
+        let initialData = { firstRun: true, secondRun: true, installGlistEngine: false };
         fs.writeFileSync(extensionDataFilePath, JSON.stringify(initialData, null, 2));
     }
     let data = fs.readFileSync(extensionDataFilePath, 'utf8');
@@ -503,8 +541,6 @@ async function InstallExtensions(progress) {
         // Required extension names
         const extensionsToInstall = [
             'vadimcn.vscode-lldb',
-            'twxs.cmake',
-            'ms-vscode.cmake-tools',
             'ms-vscode.cpptools',
         ];
         let incrementValue = 100 / extensionsToInstall.length;
@@ -544,8 +580,6 @@ async function CreateWorkspace() {
             ExtractArchive(ninjaPath, path.join(glistZbinPath, "CMake", "bin"), "");
             await fs.remove(ninjaPath);
         }
-        // Add cmake to system path
-        AddPathToSystemEnvironment(path.join(glistZbinPath, "CMake", "bin"));
         let workspaceFolders = [];
         getSubfolders(glistappsPath).map(folder => {
             if (fs.existsSync(path.join(folder, "CMakeLists.txt"))) {
@@ -567,7 +601,8 @@ async function CreateWorkspace() {
         // Opens the new workspace. Setup cannot continue after here because vscode restarts. For resuming setup, there is a secondary setup run.
         await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(workspaceFilePath), false);
         // If workspace was already opened before, vscode will not restart so setup can continue.
-        await OpenFiles();
+        if (CheckWorkspace(false))
+            await OpenFiles();
     }
     catch (error) {
         vscode.window.showErrorMessage('Failed to create workspace.');

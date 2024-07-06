@@ -2,7 +2,7 @@ This extension includes a set of extensions for Glist development in Visual Stud
 * [CodeLLDB](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb)
 * [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
 
-This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEngine). 
+This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEngine) and only works on Windows Operating Systems.
 
 # Features
 
@@ -22,4 +22,4 @@ This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEn
 
 # Known Issues
 
-- After installing the engine, Visual Studio Code should be restarted manually because CMake cannot be found at path of old terminals.
+- Sometimes deleted folders are still shown on workspace.
