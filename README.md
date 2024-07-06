@@ -1,8 +1,6 @@
 This extension includes a set of extensions for Glist development in Visual Studio Code:
 * [CodeLLDB](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb)
 * [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
-* [CMake](https://marketplace.visualstudio.com/items?itemName=twxs.cmake)
-* [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
 
 This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEngine). 
 
@@ -24,4 +22,4 @@ This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEn
 
 # Known Issues
 
-- Syntax errors shown after first launch. Cmake extension needs to be configured manually.
+- After installing the engine, Visual Studio Code should be restarted manually because CMake cannot be found at path of old terminals.

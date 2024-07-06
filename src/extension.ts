@@ -124,10 +124,10 @@ async function AddNewProjectToWorkspace(projectName: string) {
 	await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(workspaceFilePath), false);
 }
 
-async function DeleteProjectFromWorkspace(projectName: string): Promise<Boolean> {
+async function DeleteProjectFromWorkspace(projectName: string) {
 	if (!fs.existsSync(workspaceFilePath)) {
 		vscode.window.showWarningMessage('Workspace file does not exist.');
-		return false;
+		return;
 	}
 
 	const jsonString = fs.readFileSync(workspaceFilePath, 'utf-8');
@@ -137,7 +137,7 @@ async function DeleteProjectFromWorkspace(projectName: string): Promise<Boolean>
 		folder.path.includes(glistappsPath) && folder.path.endsWith(`${projectName}`)
 	);
 	if (projectIndex === -1) {
-		return true;
+		return;
 	}
 	jsonData.folders = jsonData.folders.filter((folder: { path: string }) =>
 		!(folder.path.includes(glistappsPath) && folder.path.endsWith(`${projectName}`))
@@ -145,7 +145,6 @@ async function DeleteProjectFromWorkspace(projectName: string): Promise<Boolean>
 
 	await fs.writeFile(workspaceFilePath, JSON.stringify(jsonData, null, 2));
 	vscode.window.showInformationMessage(`Deleted project '${projectName}' from workspace.`);
-	return true;
 }
 
 async function UpdateWorkspace() {
@@ -295,6 +294,11 @@ async function updateVSCodeSettings(): Promise<boolean> {
 		"security.workspace.trust.banner": "never",
 		"security.workspace.trust.untrustedFiles": "open",
 		"security.workspace.trust.startupPrompt": "never",
+		"C_Cpp.default.includePath": [
+			"${workspaceFolder}/**",
+			"c:/dev/glist/GlistEngine/**",
+			"C:/dev/glist/zbin/glistzbin-win64/clang64/**",
+		]
 	};
 	try {
 		if (fs.existsSync(vscodeSettingsPath)) {

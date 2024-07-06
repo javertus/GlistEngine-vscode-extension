@@ -1,5 +1,12 @@
 # Change Log
 
+# 1.2.1
+
+## New
+
+- Fixed: Syntax errors shown after first launch. Cmake extension needs to be configured manually.
+- Removed extensions that is not necessary.
+
 # 1.2.0
 
 ## New

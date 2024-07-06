@@ -142,19 +142,18 @@ async function AddNewProjectToWorkspace(projectName) {
 async function DeleteProjectFromWorkspace(projectName) {
     if (!fs.existsSync(workspaceFilePath)) {
         vscode.window.showWarningMessage('Workspace file does not exist.');
-        return false;
+        return;
     }
     const jsonString = fs.readFileSync(workspaceFilePath, 'utf-8');
     const jsonData = JSON.parse(jsonString);
     // Check if the project exists in the workspace folders
     const projectIndex = jsonData.folders.findIndex((folder) => folder.path.includes(glistappsPath) && folder.path.endsWith(`${projectName}`));
     if (projectIndex === -1) {
-        return true;
+        return;
     }
     jsonData.folders = jsonData.folders.filter((folder) => !(folder.path.includes(glistappsPath) && folder.path.endsWith(`${projectName}`)));
     await fs.writeFile(workspaceFilePath, JSON.stringify(jsonData, null, 2));
     vscode.window.showInformationMessage(`Deleted project '${projectName}' from workspace.`);
-    return true;
 }
 async function UpdateWorkspace() {
     try {
@@ -282,6 +281,11 @@ async function updateVSCodeSettings() {
         "security.workspace.trust.banner": "never",
         "security.workspace.trust.untrustedFiles": "open",
         "security.workspace.trust.startupPrompt": "never",
+        "C_Cpp.default.includePath": [
+            "${workspaceFolder}/**",
+            "c:/dev/glist/GlistEngine/**",
+            "C:/dev/glist/zbin/glistzbin-win64/clang64/**",
+        ]
     };
     try {
         if (fs.existsSync(vscodeSettingsPath)) {
