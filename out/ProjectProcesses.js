@@ -50,6 +50,8 @@ async function CreateNewProject(projectName = undefined) {
         vscode.window.showInformationMessage('Created new Project.');
     }
     await WorkspaceProcesses.AddNewProjectToWorkspace(projectName, forceCreate);
+    if (forceCreate)
+        return;
     const filesToOpen = [
         path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.h'),
         path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.cpp')

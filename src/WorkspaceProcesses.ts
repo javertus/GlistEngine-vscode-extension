@@ -52,7 +52,7 @@ export async function AddNewProjectToWorkspace(projectName: string, forceCreate:
 		extension.extensionJsonData.firstRun = false;
 		extension.extensionJsonData.secondRun = true;
 		FileProcesses.SaveExtensionJson()
-		UpdateWorkspace(true);
+		await UpdateWorkspace(true);
 		return;
 	}
 	const jsonString = fs.readFileSync(globals.workspaceFilePath, 'utf-8');
@@ -115,6 +115,6 @@ export async function LaunchWorkspace() {
 		await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
 	}
 	else { // If no workspace file found, create one and launch the workspace
-		UpdateWorkspace(true);
+		await UpdateWorkspace(true);
 	}
 }
