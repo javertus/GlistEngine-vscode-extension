@@ -8,18 +8,19 @@ This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEn
 
 - Installs the Glist Engine<br>
 - Updates the Glist Engine (Coming Soon)<br>
-- Installs the required extensions if doesn't exist<br>
 - Installs Glist Plugins (Coming Soon)<br>
+- Installs the required extensions if don't exist<br>
 - Creates workspace for Glist Engine<br>
 - Creates empty Glist Project<br>
-- Quick switch into Glist Engine workspace<br>
-- Adds all Glist projects in /myglistapps folder into your workspace<br>
-- Deletes Project by given name<br>
+- Switchs into Glist workspace<br>
+- Adds all Glist projects into your workspace<br>
 - Creates new canvas or empty class to given project<br>
+- Deletes Project<br>
+- Deletes class from Project<br>
 - Closes non-existent file tabs<br>
-- Checks whether Glist projects in /myglistapps folder have necessary launch configurations for VS Code and creates the launch configuration files if doesn't exist<br>
+- Creates launch configurations if don't exist<br>
 - Debugging
 
 # Known Issues
 
-- Sometimes deleted folders are still shown on workspace.
+- Sometimes deleted projects are still shown on workspace.

@@ -1,5 +1,12 @@
 # Change Log
 
+# 1.2.5
+
+## New
+
+- Deletes class from given project.
+- Code changes.
+
 # 1.2.4
 
 ## New

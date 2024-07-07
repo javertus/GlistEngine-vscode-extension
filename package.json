@@ -4,7 +4,7 @@
   "description": "Configures the Visual Studio Code for Glist Engine and makes your job easier.",
   "publisher": "javertus",
   "icon": "images/icon.png",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "repository": {
     "type": "git",
     "url": "https://github.com/javertus/GlistEngine-vscode-extension.git"
@@ -29,36 +29,40 @@
   "contributes": {
     "commands": [
       {
-        "command": "glist-extension.create-glistapp",
+        "command": "glist-extension.create-project",
         "title": "Glist Engine: Create New Project"
       },
       {
-        "command": "glist-extension.workspace-update",
-        "title": "Glist Engine: Update Workspace"
+        "command": "glist-extension.update-workspace",
+        "title": "Glist Engine: Add All Existing Projects to Workspace"
       },
       {
         "command": "glist-extension.reset",
         "title": "Glist Engine: Reset Extension"
       },
       {
-        "command": "glist-extension.openWorkspace",
-        "title": "Glist Engine: Switch To Glist Workspace"
+        "command": "glist-extension.switch-workspace",
+        "title": "Glist Engine: Switch To Workspace"
       },
       {
-        "command": "glist-extension.installglistengine",
+        "command": "glist-extension.install-glistengine",
         "title": "Glist Engine: Install Glist Engine"
       },
       {
-        "command": "glist-extension.deleteproject",
+        "command": "glist-extension.delete-project",
         "title": "Glist Engine: Delete Project"
       },
       {
-        "command": "glist-extension.addcanvastoproject",
+        "command": "glist-extension.add-canvas-to-project",
         "title": "Glist Engine: Create New Canvas"
       },
       {
-        "command": "glist-extension.addclasstoproject",
-        "title": "Glist Engine: Create Empty Class"
+        "command": "glist-extension.add-class-to-project",
+        "title": "Glist Engine: Create New Class"
+      },
+      {
+        "command": "glist-extension.delete-class-from-project",
+        "title": "Glist Engine: Delete Class"
       }
     ]
   },
