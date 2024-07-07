@@ -9,10 +9,10 @@ import * as ProjectProcesses from './ProjectProcesses';
 
 export async function InstallGlistEngine() {
 	extension.extensionJsonData.installGlistEngine = true;
-	FileProcesses.SaveExtensionJson()
+	FileProcesses.SaveExtensionJson();
 	if (await FileProcesses.UpdateVSCodeSettings()) return;
 	extension.extensionJsonData.installGlistEngine = false;
-	FileProcesses.SaveExtensionJson()
+	FileProcesses.SaveExtensionJson();
 	const result = await vscode.window.showInformationMessage(
 		'This action will install the Glist Engine and its dependencies. Current Glist Engine installation in /glist folder will be modified if exist. Your projects and plugins will not affected. Do you want to continue?',
 		{ modal: true },

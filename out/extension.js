@@ -208,7 +208,6 @@ async function InstallExtensions(progress) {
         console.error(error);
     }
 }
-// Open the canvas files
 function deactivate() { }
 exports.deactivate = deactivate;
 //# sourceMappingURL=extension.js.map

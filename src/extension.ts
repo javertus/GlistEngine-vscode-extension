@@ -203,7 +203,4 @@ async function InstallExtensions(progress: any) {
 	}
 }
 
-// Open the canvas files
-
-
 export function deactivate() { }

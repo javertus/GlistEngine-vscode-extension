@@ -1,10 +1,16 @@
 # Change Log
 
+# 1.2.7
+
+## New
+
+- Minor bug fix
+
 # 1.2.6
 
 ## New
 
-- Minor bug fixes
+- Minor bug fix
 
 # 1.2.5
 

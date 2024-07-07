@@ -47,7 +47,6 @@ export async function UpdateWorkspace(forceCreate: boolean = false) {
 }
 
 export async function AddNewProjectToWorkspace(projectName: string, forceCreate: boolean = false) {
-	// Read the JSON file
 	if (!fs.existsSync(globals.workspaceFilePath) || forceCreate) {
 		extension.extensionJsonData.firstRun = false;
 		extension.extensionJsonData.secondRun = true;
@@ -102,11 +101,16 @@ export function DeleteProjectFromWorkspace(projectName: string) {
 }
 
 export async function CloseNonExistentFileTabs() {
-	const visibleWindows = vscode.window.tabGroups.activeTabGroup.tabs;
-	for (const visibleWindow of visibleWindows) {
-		const filePath = JSON.parse(JSON.stringify(visibleWindow.input, null, 2));
-		if (fs.existsSync(filePath.uri.fsPath)) continue;
-		await vscode.window.tabGroups.close(visibleWindow, false);
+	try {
+		const visibleWindows = vscode.window.tabGroups.activeTabGroup.tabs;
+		for (const visibleWindow of visibleWindows) {
+			const filePath = JSON.parse(JSON.stringify(visibleWindow.input, null, 2));
+			if (fs.existsSync(filePath.uri.fsPath)) continue;
+			await vscode.window.tabGroups.close(visibleWindow, false);
+		}
+	}
+	catch (err) {
+		console.log(err);
 	}
 }
 
