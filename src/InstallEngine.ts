@@ -26,7 +26,7 @@ export async function InstallGlistEngine() {
 			title: 'Installing dependencies for Glist Engine. Please wait...'
 		}, async (progress) => {
 			progress.report({ increment: 0 });
-			await createDirectories();
+			createDirectories();
 			progress.report({ increment: 20 });
 			await InstallEngine();
 			progress.report({ increment: 20 });

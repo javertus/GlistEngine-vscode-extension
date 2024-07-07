@@ -24,7 +24,7 @@ export async function CreateNewProject(projectName: any = undefined) {
 	}
 
 	await WorkspaceProcesses.AddNewProjectToWorkspace(projectName, forceCreate);
-
+	if(forceCreate) return;
 	const filesToOpen = [
 		path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.h'),
 		path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.cpp')

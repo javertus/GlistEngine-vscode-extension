@@ -1,5 +1,11 @@
 # Change Log
 
+# 1.2.6
+
+## New
+
+- Minor bug fixes
+
 # 1.2.5
 
 ## New
@@ -36,6 +42,7 @@
 # 1.2.0
 
 ## New
+
 - Creating new canvas or empty class to given project
 - Closing non-existent file tabs
 - Deleting projects

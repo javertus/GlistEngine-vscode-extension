@@ -79,7 +79,6 @@ async function FirstRunWorker() {
         exports.extensionJsonData.installGlistEngine = false;
         FileProcesses.SaveExtensionJson();
         await InstallEngine.InstallGlistEngine();
-        return;
     }
     if (!fs.existsSync(path.join(exports.extensionPath, "GlistApp"))) {
         await InstallGlistAppTemplate();
@@ -150,10 +149,9 @@ async function ConfigureExtension() {
 async function OpenFiles() {
     // Close all active tabs
     vscode.commands.executeCommand('workbench.action.closeAllEditors');
-    const myglistappsPath = 'c:\\dev\\glist\\myglistapps\\';
     const filesToOpen = [
-        path.join(myglistappsPath, 'GlistApp', 'src', 'gCanvas.h'),
-        path.join(myglistappsPath, 'GlistApp', 'src', 'gCanvas.cpp')
+        path.join(globals.glistappsPath, 'GlistApp', 'src', 'gCanvas.h'),
+        path.join(globals.glistappsPath, 'GlistApp', 'src', 'gCanvas.cpp')
     ];
     filesToOpen.forEach(async (file) => {
         const uri = vscode.Uri.file(file);
