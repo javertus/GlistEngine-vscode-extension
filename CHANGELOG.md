@@ -1,5 +1,15 @@
 # Change Log
 
+# 1.3.0
+
+## New
+
+- Instals or updates glist plugins.
+- Updates the engine.
+- Auto updates.
+- Clones project.
+- When Installing or cloning, you can see the percentage of how much is completed.
+
 # 1.2.7
 
 ## New

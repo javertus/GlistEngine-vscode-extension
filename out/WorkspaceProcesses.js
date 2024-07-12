@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LaunchWorkspace = exports.CloseNonExistentFileTabs = exports.DeleteProjectFromWorkspace = exports.AddNewProjectToWorkspace = exports.UpdateWorkspace = exports.CheckWorkspace = void 0;
+exports.LaunchWorkspace = exports.CloseNonExistentFileTabs = exports.DeleteProjectFromWorkspace = exports.AddNewProjectToWorkspace = exports.UpdateWorkspace = exports.IsUserInWorkspace = void 0;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
@@ -31,7 +31,7 @@ const FileProcesses = __importStar(require("./FileProcesses"));
 const globals = __importStar(require("./globals"));
 const extension = __importStar(require("./extension"));
 //Checks if user is in Glist Workspace
-function CheckWorkspace(showErrorMessage = true) {
+function IsUserInWorkspace(showErrorMessage = true) {
     let folders = vscode.workspace.workspaceFolders;
     let len = folders?.length;
     if (!folders || !len || folders[len - 1].uri.fsPath.toLowerCase() != globals.glistEnginePath.toLowerCase()) {
@@ -41,13 +41,13 @@ function CheckWorkspace(showErrorMessage = true) {
     }
     return true;
 }
-exports.CheckWorkspace = CheckWorkspace;
+exports.IsUserInWorkspace = IsUserInWorkspace;
 async function UpdateWorkspace(forceCreate = false) {
-    if (!CheckWorkspace(!forceCreate) && !forceCreate)
+    if (!IsUserInWorkspace(!forceCreate) && !forceCreate)
         return;
     try {
         let workspaceFolders = [];
-        FileProcesses.getSubfolders(globals.glistappsPath).map(folder => {
+        FileProcesses.GetSubfolders(globals.glistappsPath).map(folder => {
             if (fs.existsSync(path.join(folder, "CMakeLists.txt"))) {
                 workspaceFolders.push(folder);
                 if (!fs.existsSync(path.join(folder, ".vscode"))) {

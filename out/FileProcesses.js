@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DeleteFolder = exports.getSubfolders = exports.ExtractArchive = exports.SaveExtensionJson = exports.DownloadFile = exports.RemoveFileFromCMakeLists = exports.AddFileToCMakeLists = exports.ReplaceText = exports.UpdateVSCodeSettings = void 0;
+exports.DeleteFolder = exports.GetSubfolders = exports.ExtractArchive = exports.SaveExtensionJson = exports.DownloadFile = exports.RemoveFileFromCMakeLists = exports.AddFileToCMakeLists = exports.ReplaceText = exports.UpdateVSCodeSettings = void 0;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
@@ -37,46 +37,23 @@ const rimraf_1 = require("rimraf");
 const extension = __importStar(require("./extension"));
 const globals = __importStar(require("./globals"));
 async function UpdateVSCodeSettings() {
-    const vscodeSettingsPath = path.join(process.env.HOME || process.env.USERPROFILE || '', 'AppData/Roaming/Code/User/settings.json' // This path might differ based on OS and VS Code distribution
-    );
     let settings;
-    const newSettings = {
-        "extensions.ignoreRecommendations": true,
-        /*"cmake.options.statusBarVisibility": "visible",
-        "cmake.showOptionsMovedNotification": false,
-        "cmake.configureOnOpen": true,*/
-        "security.workspace.trust.enabled": false,
-        "security.workspace.trust.banner": "never",
-        "security.workspace.trust.untrustedFiles": "open",
-        "security.workspace.trust.startupPrompt": "never",
-        "C_Cpp.debugShortcut": false,
-        "C_Cpp.default.compilerPath": globals.currentDrive.at(0) + ":\\dev\\glist\\zbin\\glistzbin-win64\\clang64\\bin\\clang++.exe",
-        "C_Cpp.default.includePath": [
-            "${workspaceFolder}/**",
-            "${workspaceFolder}/../../glistplugins/**",
-            "${workspaceFolder}/../../GlistEngine/**",
-            "${workspaceFolder}/../../zbin/glistzbin-win64/clang64/include/**"
-        ],
-        "terminal.integrated.env.windows": {
-            "Path": "${env:PATH};C:/dev/glist/zbin/glistzbin-win64/CMake/bin"
-        }
-    };
     try {
-        if (fs.existsSync(vscodeSettingsPath)) {
-            const fileContent = await fs.readFile(vscodeSettingsPath, 'utf-8');
+        if (fs.existsSync(globals.vscodeSettingsPath)) {
+            const fileContent = await fs.readFile(globals.vscodeSettingsPath, 'utf-8');
             settings = json5_1.default.parse(fileContent);
         }
         else {
-            await fs.writeFile(vscodeSettingsPath, JSON.stringify(newSettings, null, 2));
+            await fs.writeFile(globals.vscodeSettingsPath, JSON.stringify(globals.vscodeSettings, null, 2));
             vscode.commands.executeCommand('workbench.action.reloadWindow');
             return true;
         }
         let isChanged = false;
         // Add or update settings
-        for (const [key, value] of Object.entries(newSettings)) {
+        for (const [key, value] of Object.entries(globals.vscodeSettings)) {
             if (Array.isArray(value)) {
                 const currentArray = settings[key] || [];
-                const updatedArray = arraysUnion(currentArray, value);
+                const updatedArray = ArraysUnion(currentArray, value);
                 if (currentArray.length !== updatedArray.length) {
                     settings[key] = updatedArray;
                     isChanged = true;
@@ -100,7 +77,7 @@ async function UpdateVSCodeSettings() {
             }
         }
         if (isChanged) {
-            await fs.writeFile(vscodeSettingsPath, JSON.stringify(settings, null, 2));
+            await fs.writeFile(globals.vscodeSettingsPath, JSON.stringify(settings, null, 2));
             vscode.commands.executeCommand('workbench.action.reloadWindow');
         }
         return isChanged;
@@ -172,15 +149,35 @@ function RemoveFileFromCMakeLists(projectPath, fileName) {
     (0, rimraf_1.rimrafSync)(hFilePath);
 }
 exports.RemoveFileFromCMakeLists = RemoveFileFromCMakeLists;
-async function DownloadFile(url, dest) {
-    const response = await (0, axios_1.default)({
-        method: 'GET',
-        url: url,
-        responseType: 'arraybuffer',
-        maxRedirects: 5,
+async function DownloadFile(url, dest, message) {
+    await vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification,
+        title: message,
+        cancellable: false
+    }, async (progress) => {
+        let lastIncrementVal = 0;
+        const response = await (0, axios_1.default)({
+            method: 'GET',
+            url: url,
+            responseType: 'arraybuffer',
+            maxRedirects: 5,
+            onDownloadProgress: (progressEvent) => {
+                if (!message)
+                    return;
+                if (progressEvent.lengthComputable) {
+                    if (!progressEvent.total)
+                        return;
+                    const percentage = (progressEvent.loaded / progressEvent.total) * 100;
+                    progress.report({ message: ` ${percentage.toFixed(2)}%`, increment: percentage - lastIncrementVal });
+                    lastIncrementVal = percentage;
+                }
+                else {
+                    progress.report({ message: `Downloaded ${(progressEvent.loaded / (1024 * 1024)).toFixed(2)}MB` });
+                }
+            }
+        });
+        fs.writeFileSync(dest, response.data);
     });
-    // Pipe the stream to the destination file
-    fs.writeFileSync(dest, response.data);
 }
 exports.DownloadFile = DownloadFile;
 function SaveExtensionJson() {
@@ -193,18 +190,18 @@ function ExtractArchive(zipPath, dest, message) {
     vscode.window.showInformationMessage(message);
 }
 exports.ExtractArchive = ExtractArchive;
-function getSubfolders(directory) {
+function GetSubfolders(directory) {
     return fs.readdirSync(directory)
         .filter(file => fs.statSync(path.join(directory, file)).isDirectory())
         .map(folder => path.join(directory, folder));
 }
-exports.getSubfolders = getSubfolders;
+exports.GetSubfolders = GetSubfolders;
 async function DeleteFolder(folderPath) {
     await (0, rimraf_1.rimraf)(folderPath);
     console.log(`Folder ${folderPath} deleted successfully.`);
 }
 exports.DeleteFolder = DeleteFolder;
-function arraysUnion(a, b) {
+function ArraysUnion(a, b) {
     const set = new Set(a);
     for (const item of b) {
         set.add(item);

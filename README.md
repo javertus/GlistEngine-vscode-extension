@@ -6,12 +6,12 @@ This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEn
 
 # Features
 
-- Installs the Glist Engine<br>
-- Updates the Glist Engine (Coming Soon)<br>
-- Installs Glist Plugins (Coming Soon)<br>
-- Installs the required extensions if don't exist<br>
+- Installs or updates the Glist Engine<br>
+- Installs or updates Glist Plugins<br>
+- Auto-updates Projects, Plugins and Engine<br>
 - Creates workspace for Glist Engine<br>
 - Creates empty Glist Project<br>
+- Clones project from given URL<br>
 - Switchs into Glist workspace<br>
 - Adds all Glist projects into your workspace<br>
 - Creates new canvas or empty class to given project<br>
@@ -19,8 +19,9 @@ This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEn
 - Deletes class from Project<br>
 - Closes non-existent file tabs<br>
 - Creates launch configurations if don't exist<br>
+- Installs the required extensions if don't exist<br>
 - Debugging
 
 # Known Issues
 
-- Sometimes deleted projects are still shown on workspace.
+- Currently none. Please open an issue on GitHub if you find any.

@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as globals from './globals';
+import * as GitProcessses from './GitProcesses';
 import * as InstallEngine from './InstallEngine';
 import * as FileProcesses from './FileProcesses';
 import * as ProjectProcesses from './ProjectProcesses';
@@ -37,13 +38,23 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('glist-extension.install-glistengine', async () => {
 		await InstallEngine.InstallGlistEngine();
 	});
+	vscode.commands.registerCommand('glist-extension.clone-plugin', async () => {
+		await GitProcessses.ClonePlugin();
+	});
+	vscode.commands.registerCommand('glist-extension.update-repos', async () => {
+		await GitProcessses.CheckRepoUpdates();
+	});
+	vscode.commands.registerCommand('glist-extension.clone-project', async () => {
+		await GitProcessses.CloneProject();
+	});
 	vscode.commands.registerCommand('glist-extension.reset', async () => {
 		ResetExtension();
 	});
-
 	extensionPath = context.extensionPath;
 	extensionDataFilePath = path.join(extensionPath, 'ExtensionData.json');
+
 	FirstRunWorker();
+	CheckUpdates();
 }
 
 async function FirstRunWorker() {
@@ -54,7 +65,7 @@ async function FirstRunWorker() {
 		FileProcesses.SaveExtensionJson()
 		vscode.window.showInformationMessage("Project Deleted.");
 	}
-	if (WorkspaceProcesses.CheckWorkspace(false)) await WorkspaceProcesses.CloseNonExistentFileTabs();
+	if (WorkspaceProcesses.IsUserInWorkspace(false)) await WorkspaceProcesses.CloseNonExistentFileTabs();
 	if (extensionJsonData.installGlistEngine) {
 		extensionJsonData.installGlistEngine = false;
 		FileProcesses.SaveExtensionJson()
@@ -93,14 +104,13 @@ async function ConfigureExtension() {
 		fs.ensureDirSync(path.join(globals.glistZbinPath, "CMake"));
 		const ninjaPath = path.join(globals.glistZbinPath, "CMake", "bin", "ninja.zip");
 		if (!fs.existsSync(path.join(globals.glistZbinPath, "CMake", "bin", "ninja.exe"))) {
-			vscode.window.showInformationMessage("Ninja not found. Installing...");
-			await FileProcesses.DownloadFile(globals.ninjaUrl, ninjaPath);
+			await FileProcesses.DownloadFile(globals.ninjaUrl, ninjaPath, "Downloading Ninja");
 			FileProcesses.ExtractArchive(ninjaPath, path.join(globals.glistZbinPath, "CMake", "bin"), "");
 			await fs.remove(ninjaPath);
 		}
 
 		let workspaceFolders = [];
-		FileProcesses.getSubfolders(globals.glistappsPath).map(folder => {
+		FileProcesses.GetSubfolders(globals.glistappsPath).map(folder => {
 			if (fs.existsSync(path.join(folder, "CMakeLists.txt"))) {
 				workspaceFolders.push(folder)
 				if (!fs.existsSync(path.join(folder, ".vscode"))) {
@@ -122,7 +132,7 @@ async function ConfigureExtension() {
 		// Opens the new workspace. Setup cannot continue after here because vscode restarts. For resuming setup, there is a secondary setup run.
 		await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
 		// If workspace was already opened before, vscode will not restart so setup can continue.
-		if (WorkspaceProcesses.CheckWorkspace(false)) await OpenFiles();
+		if (WorkspaceProcesses.IsUserInWorkspace(false)) await OpenFiles();
 	}
 	catch (error) {
 		vscode.window.showErrorMessage('Failed to create workspace.');
@@ -150,6 +160,32 @@ async function OpenFiles() {
 	FileProcesses.SaveExtensionJson()
 }
 
+async function CheckUpdates() {
+	if (!WorkspaceProcesses.IsUserInWorkspace(false)) return;
+	if (!(await GitProcessses.CheckGitInstallation())) return;
+	let engineUpdate = vscode.workspace.getConfiguration('glistengine').get<boolean>('autoUpdate.engine');
+	let pluginsUpdate = vscode.workspace.getConfiguration('glistengine').get<boolean>('autoUpdate.plugins');
+	let projectsUpdate = vscode.workspace.getConfiguration('glistengine').get<boolean>('autoUpdate.projects');
+	
+	if(engineUpdate) {
+		GitProcessses.UpdateRepository(path.join(globals.glistPath, "GlistEngine"), true);
+	}
+	if(pluginsUpdate) {
+		FileProcesses.GetSubfolders(globals.glistpluginsPath).map(folder => {
+			if (fs.existsSync(path.join(folder, ".git"))) {
+				GitProcessses.UpdateRepository(folder, true);
+			}
+		});
+	}
+	if(projectsUpdate) {
+		FileProcesses.GetSubfolders(globals.glistappsPath).map(folder => {
+			if (fs.existsSync(path.join(folder, ".git"))) {
+				GitProcessses.UpdateRepository(folder, true);
+			}
+		});
+	}
+}
+
 function ResetExtension() {
 	extensionJsonData.firstRun = true;
 	extensionJsonData.secondRun = true;
@@ -170,7 +206,7 @@ function CheckJsonFile() {
 
 async function InstallGlistAppTemplate() {
 	const zipFilePath = path.join(extensionPath, "GlistApp.zip");
-	await FileProcesses.DownloadFile(globals.glistAppUrl, zipFilePath);
+	await FileProcesses.DownloadFile(globals.glistAppUrl, zipFilePath, "");
 	FileProcesses.ExtractArchive(zipFilePath, extensionPath, "");
 	await fs.rename(path.join(extensionPath, 'GlistApp-vscode-main'), path.join(extensionPath, 'GlistApp'));
 	await fs.remove(zipFilePath);

@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DeleteClassFromProject = exports.AddClassToProject = exports.DeleteProject = exports.CreateNewProject = void 0;
+exports.checkPath = exports.checkInput = exports.DeleteClassFromProject = exports.AddClassToProject = exports.DeleteProject = exports.OpenFiles = exports.CreateNewProject = void 0;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
@@ -35,7 +35,7 @@ async function CreateNewProject(projectName = undefined) {
     let forceCreate = false;
     if (projectName)
         forceCreate = true;
-    if (!WorkspaceProcesses.CheckWorkspace(!forceCreate) && !forceCreate)
+    if (!WorkspaceProcesses.IsUserInWorkspace(!forceCreate) && !forceCreate)
         return;
     if (!forceCreate) {
         projectName = await vscode.window.showInputBox({
@@ -56,15 +56,19 @@ async function CreateNewProject(projectName = undefined) {
         path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.h'),
         path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.cpp')
     ];
+    OpenFiles(filesToOpen);
+}
+exports.CreateNewProject = CreateNewProject;
+async function OpenFiles(filesToOpen) {
     filesToOpen.forEach(async (file) => {
         const uri = vscode.Uri.file(file);
         const document = await vscode.workspace.openTextDocument(uri);
         await vscode.window.showTextDocument(document, { preview: false });
     });
 }
-exports.CreateNewProject = CreateNewProject;
+exports.OpenFiles = OpenFiles;
 async function DeleteProject() {
-    if (!WorkspaceProcesses.CheckWorkspace())
+    if (!WorkspaceProcesses.IsUserInWorkspace())
         return;
     let projectName = await vscode.window.showInputBox({
         placeHolder: "Enter the name of Project you want to delete"
@@ -89,7 +93,7 @@ async function DeleteProject() {
 }
 exports.DeleteProject = DeleteProject;
 async function AddClassToProject(baseFilePath, fileBaseName) {
-    if (!WorkspaceProcesses.CheckWorkspace())
+    if (!WorkspaceProcesses.IsUserInWorkspace())
         return;
     let projectName = await vscode.window.showInputBox({
         placeHolder: "Enter the name of project you want to create new class"
@@ -119,15 +123,11 @@ async function AddClassToProject(baseFilePath, fileBaseName) {
         path.join(globals.glistappsPath, projectName, 'src', className + ".h"),
         path.join(globals.glistappsPath, projectName, 'src', className + ".cpp")
     ];
-    filesToOpen.forEach(async (file) => {
-        const uri = vscode.Uri.file(file);
-        const document = await vscode.workspace.openTextDocument(uri);
-        await vscode.window.showTextDocument(document, { preview: false });
-    });
+    OpenFiles(filesToOpen);
 }
 exports.AddClassToProject = AddClassToProject;
 async function DeleteClassFromProject() {
-    if (!WorkspaceProcesses.CheckWorkspace())
+    if (!WorkspaceProcesses.IsUserInWorkspace())
         return;
     let projectName = await vscode.window.showInputBox({
         placeHolder: "Enter the name of project you want to delete class from"
@@ -165,6 +165,7 @@ function checkInput(name, message = "No input provided.") {
     }
     return false;
 }
+exports.checkInput = checkInput;
 function checkPath(inputPath, message = undefined, errorMessageIfNotExist = true) {
     if (!fs.existsSync(inputPath) && errorMessageIfNotExist) {
         vscode.window.showErrorMessage(message);
@@ -176,4 +177,5 @@ function checkPath(inputPath, message = undefined, errorMessageIfNotExist = true
     }
     return false;
 }
+exports.checkPath = checkPath;
 //# sourceMappingURL=ProjectProcesses.js.map

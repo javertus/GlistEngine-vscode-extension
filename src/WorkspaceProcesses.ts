@@ -7,7 +7,7 @@ import * as extension from './extension';
 
 
 //Checks if user is in Glist Workspace
-export function CheckWorkspace(showErrorMessage: boolean = true) {
+export function IsUserInWorkspace(showErrorMessage: boolean = true) {
 	let folders = vscode.workspace.workspaceFolders;
 	let len = folders?.length;
 	if (!folders || !len || folders[len - 1].uri.fsPath.toLowerCase() != globals.glistEnginePath.toLowerCase()) {
@@ -18,10 +18,10 @@ export function CheckWorkspace(showErrorMessage: boolean = true) {
 }
 
 export async function UpdateWorkspace(forceCreate: boolean = false) {
-	if (!CheckWorkspace(!forceCreate) && !forceCreate) return;
+	if (!IsUserInWorkspace(!forceCreate) && !forceCreate) return;
 	try {
 		let workspaceFolders = [];
-		FileProcesses.getSubfolders(globals.glistappsPath).map(folder => {
+		FileProcesses.GetSubfolders(globals.glistappsPath).map(folder => {
 			if (fs.existsSync(path.join(folder, "CMakeLists.txt"))) {
 				workspaceFolders.push(folder)
 				if (!fs.existsSync(path.join(folder, ".vscode"))) {

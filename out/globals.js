@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ninjaUrl = exports.glistCmakeUrl = exports.glistClangUrl = exports.glistEngineUrl = exports.glistAppUrl = exports.glistPath = exports.glistpluginsPath = exports.workspaceFilePath = exports.glistZbinPath = exports.glistEnginePath = exports.glistappsPath = exports.tempPath = exports.currentDrive = exports.currentDirectory = void 0;
+exports.vscodeSettingsPath = exports.vscodeSettings = exports.ninjaUrl = exports.gitUrl = exports.glistCmakeUrl = exports.glistClangUrl = exports.glistEngineUrl = exports.PluginReposUrl = exports.glistPluginsUrl = exports.glistAppUrl = exports.glistPath = exports.glistpluginsPath = exports.workspaceFilePath = exports.glistZbinPath = exports.glistEnginePath = exports.glistappsPath = exports.tempPath = exports.currentDrive = exports.currentDirectory = void 0;
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
 exports.currentDirectory = process.cwd();
@@ -36,8 +36,35 @@ exports.workspaceFilePath = path.join(exports.currentDrive, "\\dev\\glist\\Glist
 exports.glistpluginsPath = path.join(exports.currentDrive, "\\dev\\glist\\glistplugins");
 exports.glistPath = path.join(exports.currentDrive, "\\dev\\glist");
 exports.glistAppUrl = "https://codeload.github.com/javertus/GlistApp-vscode/zip/refs/heads/main";
-exports.glistEngineUrl = "https://codeload.github.com/GlistEngine/GlistEngine/zip/refs/heads/main";
+exports.glistPluginsUrl = "https://github.com/GlistPlugins/";
+exports.PluginReposUrl = `https://api.github.com/orgs/GlistPlugins/repos`;
+exports.glistEngineUrl = "https://github.com/GlistEngine/";
 exports.glistClangUrl = "https://github.com/javertus/glistzbin-win64-vscode/releases/download/Dependencies/clang64.zip";
 exports.glistCmakeUrl = "https://github.com/javertus/glistzbin-win64-vscode/releases/download/Dependencies/CMake.zip";
+exports.gitUrl = "https://github.com/git-for-windows/git/releases/download/v2.45.2.windows.1/MinGit-2.45.2-64-bit.zip";
 exports.ninjaUrl = "https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip";
+exports.vscodeSettings = {
+    "extensions.ignoreRecommendations": true,
+    /*"cmake.options.statusBarVisibility": "visible",
+    "cmake.showOptionsMovedNotification": false,
+    "cmake.configureOnOpen": true,*/
+    "security.workspace.trust.enabled": false,
+    "security.workspace.trust.banner": "never",
+    "security.workspace.trust.untrustedFiles": "open",
+    "security.workspace.trust.startupPrompt": "never",
+    "C_Cpp.debugShortcut": false,
+    "git.openRepositoryInParentFolders": "never",
+    "C_Cpp.default.compilerPath": exports.currentDrive.at(0) + ":\\dev\\glist\\zbin\\glistzbin-win64\\clang64\\bin\\clang++.exe",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/../../glistplugins/**",
+        "${workspaceFolder}/../../GlistEngine/**",
+        "${workspaceFolder}/../../zbin/glistzbin-win64/clang64/include/**"
+    ],
+    "terminal.integrated.env.windows": {
+        "Path": "${env:PATH};" + exports.glistPath.split(path.sep).join("/") + "/zbin/glistzbin-win64/CMake/bin"
+    }
+};
+exports.vscodeSettingsPath = path.join(process.env.HOME || process.env.USERPROFILE || '', 'AppData/Roaming/Code/User/settings.json' // This path might differ based on OS and VS Code distribution
+);
 //# sourceMappingURL=globals.js.map

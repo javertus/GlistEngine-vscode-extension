@@ -4,7 +4,7 @@
   "description": "Configures the Visual Studio Code for Glist Engine and makes your job easier.",
   "publisher": "javertus",
   "icon": "images/icon.png",
-  "version": "1.2.7",
+  "version": "1.3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/javertus/GlistEngine-vscode-extension.git"
@@ -27,6 +27,26 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "type": "object",
+      "properties": {
+        "glistengine.autoUpdate.engine": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable auto-updating the engine if there are updates."
+        },
+        "glistengine.autoUpdate.plugins": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable auto-updating the plugins if there are updates."
+        },
+        "glistengine.autoUpdate.projects": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable auto-updating the projects if there are updates."
+        }
+      }
+    },
     "commands": [
       {
         "command": "glist-extension.create-project",
@@ -63,6 +83,18 @@
       {
         "command": "glist-extension.delete-class-from-project",
         "title": "Glist Engine: Delete Class"
+      },
+      {
+        "command": "glist-extension.clone-plugin",
+        "title": "Glist Engine: Clone Plugin"
+      },
+      {
+        "command": "glist-extension.clone-project",
+        "title": "Glist Engine: Clone Project"
+      },
+      {
+        "command": "glist-extension.update-repos",
+        "title": "Glist Engine: Check Repo Updates"
       }
     ]
   },
@@ -77,10 +109,10 @@
   "devDependencies": {
     "@types/adm-zip": "^0.5.5",
     "@types/fs-extra": "^11.0.4",
+    "@types/git": "^0.0.21",
     "@types/mocha": "^10.0.6",
     "@types/node": "^18.19.39",
     "@types/vscode": "^1.82.0",
-    "@types/winreg": "^1.2.36",
     "@typescript-eslint/eslint-plugin": "^7.11.0",
     "@typescript-eslint/parser": "^7.11.0",
     "@vscode/test-cli": "^0.0.9",
@@ -93,6 +125,8 @@
     "axios": "^1.7.2",
     "fs-extra": "^11.2.0",
     "json5": "^2.2.3",
-    "rimraf": "^5.0.7"
+    "rimraf": "^5.0.7",
+    "simple-git": "^3.25.0",
+    "tree-kill": "^1.2.2"
   }
 }
