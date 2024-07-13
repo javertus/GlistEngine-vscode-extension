@@ -9,7 +9,7 @@ This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEn
 - Installs or updates the Glist Engine<br>
 - Installs or updates Glist Plugins<br>
 - Auto-updates Projects, Plugins and Engine<br>
-- Creates workspace for Glist Engine<br>
+- Creates custom workspace for Glist<br>
 - Creates empty Glist Project<br>
 - Clones project from given URL<br>
 - Switchs into Glist workspace<br>

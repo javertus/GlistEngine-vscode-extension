@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.vscodeSettingsPath = exports.vscodeSettings = exports.ninjaUrl = exports.gitUrl = exports.glistCmakeUrl = exports.glistClangUrl = exports.glistEngineUrl = exports.PluginReposUrl = exports.glistPluginsUrl = exports.glistAppUrl = exports.glistPath = exports.glistpluginsPath = exports.workspaceFilePath = exports.glistZbinPath = exports.glistEnginePath = exports.glistappsPath = exports.tempPath = exports.currentDrive = exports.currentDirectory = void 0;
+exports.vscodeSettingsPath = exports.vscodeSettings = exports.ninjaUrl = exports.gitUrl = exports.glistCmakeUrl = exports.glistClangUrl = exports.glistEngineUrl = exports.pluginReposUrl = exports.glistPluginsUrl = exports.glistAppUrl = exports.glistPath = exports.glistpluginsPath = exports.workspaceFilePath = exports.glistZbinPath = exports.glistEnginePath = exports.glistappsPath = exports.tempPath = exports.currentDrive = exports.currentDirectory = void 0;
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
 exports.currentDirectory = process.cwd();
@@ -37,7 +37,7 @@ exports.glistpluginsPath = path.join(exports.currentDrive, "\\dev\\glist\\glistp
 exports.glistPath = path.join(exports.currentDrive, "\\dev\\glist");
 exports.glistAppUrl = "https://codeload.github.com/javertus/GlistApp-vscode/zip/refs/heads/main";
 exports.glistPluginsUrl = "https://github.com/GlistPlugins/";
-exports.PluginReposUrl = `https://api.github.com/orgs/GlistPlugins/repos`;
+exports.pluginReposUrl = `https://api.github.com/orgs/GlistPlugins/repos`;
 exports.glistEngineUrl = "https://github.com/GlistEngine/GlistEngine";
 exports.glistClangUrl = "https://github.com/javertus/glistzbin-win64-vscode/releases/download/Dependencies/clang64.zip";
 exports.glistCmakeUrl = "https://github.com/javertus/glistzbin-win64-vscode/releases/download/Dependencies/CMake.zip";

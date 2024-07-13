@@ -51,24 +51,30 @@ async function InstallGlistEngine() {
             cancellable: false,
             title: 'Installing dependencies for Glist Engine'
         }, async (progress) => {
-            installation = true;
-            if (!(await GitProcesses.CheckGitInstallation())) {
+            try {
+                installation = true;
+                if (!(await GitProcesses.CheckGitInstallation())) {
+                    installation = false;
+                    return;
+                }
+                progress.report({ increment: 0 });
+                createDirectories();
+                progress.report({ increment: 20 });
+                await InstallEngine(progress);
+                progress.report({ increment: 20 });
+                await InstallCmake(progress);
+                progress.report({ increment: 20 });
+                await InstallClang(progress);
+                progress.report({ increment: 20 });
+                await createEmptyProject();
+                progress.report({ increment: 20 });
+                vscode.window.showInformationMessage("Glist Engine Installed Successfully.");
                 installation = false;
-                return;
             }
-            progress.report({ increment: 0 });
-            createDirectories();
-            progress.report({ increment: 20 });
-            await InstallEngine(progress);
-            progress.report({ increment: 20 });
-            await InstallCmake(progress);
-            progress.report({ increment: 20 });
-            await InstallClang(progress);
-            progress.report({ increment: 20 });
-            await createEmptyProject();
-            progress.report({ increment: 20 });
-            vscode.window.showInformationMessage("Glist Engine Installed Successfully.");
-            installation = false;
+            catch (err) {
+                vscode.window.showErrorMessage(`An error occurred while installing Glist Engine: ${err}`);
+                installation = false;
+            }
         });
     }
 }

@@ -16,7 +16,7 @@ export const glistPath = path.join(currentDrive, "\\dev\\glist");
 
 export const glistAppUrl = "https://codeload.github.com/javertus/GlistApp-vscode/zip/refs/heads/main";
 export const glistPluginsUrl = "https://github.com/GlistPlugins/"
-export const PluginReposUrl = `https://api.github.com/orgs/GlistPlugins/repos`;
+export const pluginReposUrl = `https://api.github.com/orgs/GlistPlugins/repos`;
 export const glistEngineUrl = "https://github.com/GlistEngine/GlistEngine";
 export const glistClangUrl = "https://github.com/javertus/glistzbin-win64-vscode/releases/download/Dependencies/clang64.zip";
 export const glistCmakeUrl = "https://github.com/javertus/glistzbin-win64-vscode/releases/download/Dependencies/CMake.zip";

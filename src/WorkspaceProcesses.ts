@@ -31,16 +31,14 @@ export async function UpdateWorkspace(forceCreate: boolean = false) {
 			folders: workspaceFolders.map(folder => ({ path: folder })),
 		};
 
-		CheckLaunchConfigurations();
-
 		fs.writeFileSync(globals.workspaceFilePath, JSON.stringify(workspaceContent, null, 2));
+		CheckLaunchConfigurations();
 		vscode.window.showInformationMessage('Workspace configured.');
 
 		//VS Code will restart if another workspace is active.
 		await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
 	} catch (error) {
-		vscode.window.showErrorMessage('Failed to create workspace.');
-		console.error(error);
+		vscode.window.showErrorMessage(`Failed to create workspace: ${error}`);
 	}
 }
 

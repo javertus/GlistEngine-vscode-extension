@@ -142,7 +142,7 @@ async function ConfigureExtension() {
         exports.extensionJsonData.firstRun = false;
         FileProcesses.SaveExtensionJson();
         // Opens the new workspace. Setup cannot continue after here because vscode restarts. For resuming setup, there is a secondary setup run.
-        WorkspaceProcesses.UpdateWorkspace(true);
+        await WorkspaceProcesses.UpdateWorkspace(true);
         // If workspace was already opened before, vscode will not restart so setup can continue.
         if (WorkspaceProcesses.IsUserInWorkspace(false))
             await OpenFiles();

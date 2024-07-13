@@ -1,5 +1,11 @@
 # Change Log
 
+# 1.3.4
+
+## New
+
+- Minor bug fix
+
 # 1.3.3
 
 ## New

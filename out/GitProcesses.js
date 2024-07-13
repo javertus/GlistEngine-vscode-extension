@@ -212,7 +212,7 @@ async function ClonePlugin() {
         return;
     let selection;
     try {
-        const response = await axios_1.default.get(globals.PluginReposUrl);
+        const response = await axios_1.default.get(globals.pluginReposUrl);
         const repoNames = response.data.map(repo => repo.name);
         selection = await vscode.window.showQuickPick(repoNames, { title: "Select the plugin you want to clone" });
         if (!selection)
