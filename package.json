@@ -4,7 +4,7 @@
   "description": "Configures the Visual Studio Code for Glist Engine and makes your job easier.",
   "publisher": "javertus",
   "icon": "images/icon.png",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/javertus/GlistEngine-vscode-extension.git"
