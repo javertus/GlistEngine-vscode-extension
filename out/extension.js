@@ -170,15 +170,17 @@ async function OpenFiles() {
 async function CheckUpdates() {
     if (!WorkspaceProcesses.IsUserInWorkspace(false))
         return;
-    if (!(await GitProcessses.CheckGitInstallation()))
-        return;
     let engineUpdate = vscode.workspace.getConfiguration('glistengine').get('autoUpdate.engine');
     let pluginsUpdate = vscode.workspace.getConfiguration('glistengine').get('autoUpdate.plugins');
     let projectsUpdate = vscode.workspace.getConfiguration('glistengine').get('autoUpdate.projects');
     if (engineUpdate) {
+        if (!(await GitProcessses.CheckGitInstallation()))
+            return;
         GitProcessses.UpdateRepository(path.join(globals.glistPath, "GlistEngine"), true);
     }
     if (pluginsUpdate) {
+        if (!(await GitProcessses.CheckGitInstallation()))
+            return;
         FileProcesses.GetSubfolders(globals.glistpluginsPath).map(folder => {
             if (fs.existsSync(path.join(folder, ".git"))) {
                 GitProcessses.UpdateRepository(folder, true);
@@ -186,6 +188,8 @@ async function CheckUpdates() {
         });
     }
     if (projectsUpdate) {
+        if (!(await GitProcessses.CheckGitInstallation()))
+            return;
         FileProcesses.GetSubfolders(globals.glistappsPath).map(folder => {
             if (fs.existsSync(path.join(folder, ".git"))) {
                 GitProcessses.UpdateRepository(folder, true);

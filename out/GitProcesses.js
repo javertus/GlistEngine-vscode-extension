@@ -50,7 +50,7 @@ async function CheckGitInstallation() {
         return true;
     }
     catch {
-        const result = await vscode.window.showInformationMessage('Git is not found! This action requires Git to be installed. Do you want to install?', { modal: true }, 'Yes', 'No');
+        const result = await vscode.window.showInformationMessage('Git is not found! Install, clone or update actions require Git. Do you want to install?', { modal: true }, 'Yes', 'No');
         if (result == 'Yes') {
             await InstallGit();
             return true;
