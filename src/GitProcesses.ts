@@ -188,16 +188,13 @@ export async function UpdateRepository(repoPath: string, autoUpdate: boolean = f
     }
 }
 
-interface Repo {
-    name: string;
-}
 
 export async function ClonePlugin() {
     if (!WorkspaceProcesses.IsUserInWorkspace()) return;
     if (!(await CheckGitInstallation())) return;
     let selection;
     try {
-        const response = await axios.get<Repo[]>(globals.PluginReposUrl);
+        const response = await axios.get<{name: string}[]>(globals.PluginReposUrl);
         const repoNames = response.data.map(repo => repo.name);
         selection = await vscode.window.showQuickPick(repoNames, { title: "Select the plugin you want to clone" });
         if (!selection) return;
@@ -260,7 +257,7 @@ export async function CloneProject() {
     let decision = await vscode.window.showInputBox({
         placeHolder: 'Paste the Project URL here.'
     });
-    if (ProjectProcesses.checkInput(decision)) return;
+    if (ProjectProcesses.CheckInput(decision)) return;
     decision = decision + "";
     let repoName = GetRepoNameFromUrl(decision);
     try {

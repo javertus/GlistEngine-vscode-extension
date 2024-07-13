@@ -1,5 +1,14 @@
 # Change Log
 
+# 1.3.1
+
+## New
+
+- Added a run button.
+- Fixed a bug that caused launch configurations to not be created after cloning a project.
+- Fixed a bug that caused deleted file tabs to not get closed.
+- When deleting a project or class, you can select the name of it from the given list instead of typing the name.
+
 # 1.3.0
 
 ## New

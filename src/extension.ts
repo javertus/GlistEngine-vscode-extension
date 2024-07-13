@@ -50,9 +50,12 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('glist-extension.reset', async () => {
 		ResetExtension();
 	});
+	vscode.commands.registerCommand('glist-extension.run-project', async () => {
+		vscode.commands.executeCommand('workbench.action.debug.start');
+	});
+
 	extensionPath = context.extensionPath;
 	extensionDataFilePath = path.join(extensionPath, 'ExtensionData.json');
-
 	FirstRunWorker();
 	CheckUpdates();
 }
@@ -65,7 +68,19 @@ async function FirstRunWorker() {
 		FileProcesses.SaveExtensionJson()
 		vscode.window.showInformationMessage("Project Deleted.");
 	}
-	if (WorkspaceProcesses.IsUserInWorkspace(false)) await WorkspaceProcesses.CloseNonExistentFileTabs();
+
+	if(WorkspaceProcesses.IsUserInWorkspace(false)) {
+		vscode.commands.executeCommand('setContext', 'glist-extension.showRunButton', true);
+		const folderWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(globals.glistPath, '**'));
+		folderWatcher.onDidDelete(e => {
+			WorkspaceProcesses.CloseNonExistentFileTabs();
+		});
+		folderWatcher.onDidChange(e => {
+			WorkspaceProcesses.CloseNonExistentFileTabs();
+		});
+		await WorkspaceProcesses.CloseNonExistentFileTabs();
+	} 
+
 	if (extensionJsonData.installGlistEngine) {
 		extensionJsonData.installGlistEngine = false;
 		FileProcesses.SaveExtensionJson()
@@ -108,29 +123,10 @@ async function ConfigureExtension() {
 			FileProcesses.ExtractArchive(ninjaPath, path.join(globals.glistZbinPath, "CMake", "bin"), "");
 			await fs.remove(ninjaPath);
 		}
-
-		let workspaceFolders = [];
-		FileProcesses.GetSubfolders(globals.glistappsPath).map(folder => {
-			if (fs.existsSync(path.join(folder, "CMakeLists.txt"))) {
-				workspaceFolders.push(folder)
-				if (!fs.existsSync(path.join(folder, ".vscode"))) {
-					vscode.window.showInformationMessage("Launch configurations are not found for project at " + folder + ". Creating launch configurations...");
-					fs.cpSync(path.join(extensionPath, 'GlistApp', '.vscode'), path.join(folder, '.vscode'), { recursive: true });
-				}
-			}
-		});
-		workspaceFolders.push(globals.glistEnginePath);
-		const workspaceContent = {
-			folders: workspaceFolders.map(folder => ({ path: folder })),
-		};
-
-		fs.writeFileSync(globals.workspaceFilePath, JSON.stringify(workspaceContent, null, 2));
-		vscode.window.showInformationMessage('Workspace configured.');
 		extensionJsonData.firstRun = false;
 		FileProcesses.SaveExtensionJson()
-
 		// Opens the new workspace. Setup cannot continue after here because vscode restarts. For resuming setup, there is a secondary setup run.
-		await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
+		WorkspaceProcesses.UpdateWorkspace(true);
 		// If workspace was already opened before, vscode will not restart so setup can continue.
 		if (WorkspaceProcesses.IsUserInWorkspace(false)) await OpenFiles();
 	}

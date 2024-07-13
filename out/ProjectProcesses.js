@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkPath = exports.checkInput = exports.DeleteClassFromProject = exports.AddClassToProject = exports.DeleteProject = exports.OpenFiles = exports.CreateNewProject = void 0;
+exports.CheckPath = exports.CheckInput = exports.DeleteClassFromProject = exports.AddClassToProject = exports.QuickPickFromWorkspaceFolders = exports.DeleteProject = exports.OpenFiles = exports.CreateNewProject = void 0;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
@@ -42,10 +42,10 @@ async function CreateNewProject(projectName = undefined) {
             placeHolder: "Enter the name of new Project"
         });
     }
-    if (checkInput(projectName))
+    if (CheckInput(projectName))
         return;
     projectName = projectName + "";
-    if (!checkPath(path.join(globals.glistappsPath, projectName), "A project named " + projectName + " already exist. Opening already existing project...", false)) {
+    if (!CheckPath(path.join(globals.glistappsPath, projectName), "A project named " + projectName + " already exist. Opening already existing project...", false)) {
         fs.cpSync(path.join(extension.extensionPath, 'GlistApp'), path.join(globals.glistappsPath, projectName), { recursive: true });
         vscode.window.showInformationMessage('Created new Project.');
     }
@@ -70,13 +70,8 @@ exports.OpenFiles = OpenFiles;
 async function DeleteProject() {
     if (!WorkspaceProcesses.IsUserInWorkspace())
         return;
-    let projectName = await vscode.window.showInputBox({
-        placeHolder: "Enter the name of Project you want to delete"
-    });
-    if (checkInput(projectName))
-        return;
-    projectName = projectName + "";
-    if (checkPath(path.join(globals.glistappsPath, projectName), "A project named " + projectName + " does not exist!"))
+    let project = await QuickPickFromWorkspaceFolders();
+    if (!project)
         return;
     let decision = await vscode.window.showInputBox({
         placeHolder: 'Are you sure about deleting this project? Type "yes" to continue.'
@@ -85,88 +80,110 @@ async function DeleteProject() {
         vscode.window.showErrorMessage("Deleting Project Cancelled!");
         return;
     }
-    WorkspaceProcesses.DeleteProjectFromWorkspace(projectName);
-    FileProcesses.DeleteFolder(path.join(globals.glistappsPath, projectName));
-    extension.extensionJsonData.deleteFolder = path.join(globals.glistappsPath, projectName);
+    WorkspaceProcesses.DeleteProjectFromWorkspace(project.name);
+    FileProcesses.DeleteFolder(project.path);
+    extension.extensionJsonData.deleteFolder = project.path;
     FileProcesses.SaveExtensionJson();
     vscode.commands.executeCommand('workbench.action.reloadWindow');
 }
 exports.DeleteProject = DeleteProject;
+async function QuickPickFromWorkspaceFolders() {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (CheckInput(workspaceFolders))
+        return;
+    let folders = [];
+    workspaceFolders?.forEach(folder => {
+        if (!(folder.uri.fsPath.toLowerCase() == globals.glistEnginePath.toLowerCase())) {
+            folders.push({ name: folder.name, path: folder.uri.fsPath });
+        }
+    });
+    const selectedFolder = await vscode.window.showQuickPick(folders.map(folder => `${folder.name} (${folder.path})`), {
+        placeHolder: 'Select the name of project you want to create new class'
+    });
+    if (CheckInput(selectedFolder))
+        return;
+    return folders.find(folder => selectedFolder == `${folder.name} (${folder.path})`);
+}
+exports.QuickPickFromWorkspaceFolders = QuickPickFromWorkspaceFolders;
 async function AddClassToProject(baseFilePath, fileBaseName) {
     if (!WorkspaceProcesses.IsUserInWorkspace())
         return;
-    let projectName = await vscode.window.showInputBox({
-        placeHolder: "Enter the name of project you want to create new class"
-    });
-    if (checkInput(projectName))
-        return;
-    projectName = projectName + "";
-    if (checkPath(path.join(globals.glistappsPath, projectName), "A project named " + projectName + " does not exist!"))
+    let project = await QuickPickFromWorkspaceFolders();
+    if (!project)
         return;
     let className = await vscode.window.showInputBox({
         placeHolder: "Enter the name of file you want to create"
     });
-    if (checkInput(className))
+    if (CheckInput(className))
         return;
     className = className + "";
-    if (checkPath(path.join(globals.glistappsPath, projectName, "src", className + ".h"), "A class named " + className + " already exist!", false))
+    if (CheckPath(path.join(project.path, "src", className + ".h"), "A class named " + className + " already exist!", false))
         return;
-    if (checkPath(path.join(globals.glistappsPath, projectName, "src", className + ".cpp"), "A class named " + className + " already exist!", false))
+    if (CheckPath(path.join(project.path, "src", className + ".cpp"), "A class named " + className + " already exist!", false))
         return;
-    fs.copyFileSync(path.join(baseFilePath, fileBaseName + ".h"), path.join(globals.glistappsPath, projectName, "src", className + ".h"));
-    fs.copyFileSync(path.join(baseFilePath, fileBaseName + ".cpp"), path.join(globals.glistappsPath, projectName, "src", className + ".cpp"));
-    FileProcesses.ReplaceText(path.join(globals.glistappsPath, projectName, "src", className + ".h"), fileBaseName, className);
-    FileProcesses.ReplaceText(path.join(globals.glistappsPath, projectName, "src", className + ".cpp"), fileBaseName, className);
-    FileProcesses.ReplaceText(path.join(globals.glistappsPath, projectName, "src", className + ".h"), fileBaseName.toUpperCase() + "_H_", className.toUpperCase() + "_H_");
-    FileProcesses.AddFileToCMakeLists(path.join(globals.glistappsPath, projectName), className);
+    fs.copyFileSync(path.join(baseFilePath, fileBaseName + ".h"), path.join(project.path, "src", className + ".h"));
+    fs.copyFileSync(path.join(baseFilePath, fileBaseName + ".cpp"), path.join(project.path, "src", className + ".cpp"));
+    FileProcesses.ReplaceText(path.join(project.path, "src", className + ".h"), fileBaseName, className);
+    FileProcesses.ReplaceText(path.join(project.path, "src", className + ".cpp"), fileBaseName, className);
+    FileProcesses.ReplaceText(path.join(project.path, "src", className + ".h"), fileBaseName.toUpperCase() + "_H_", className.toUpperCase() + "_H_");
+    FileProcesses.AddFileToCMakeLists(path.join(project.path), className);
     const filesToOpen = [
-        path.join(globals.glistappsPath, projectName, 'src', className + ".h"),
-        path.join(globals.glistappsPath, projectName, 'src', className + ".cpp")
+        path.join(project.path, 'src', className + ".h"),
+        path.join(project.path, 'src', className + ".cpp")
     ];
     OpenFiles(filesToOpen);
 }
 exports.AddClassToProject = AddClassToProject;
+function GetSubFiles(directory) {
+    return fs.readdirSync(directory)
+        .filter(file => fs.statSync(path.join(directory, file)).isFile())
+        .map(folder => path.join(directory, folder));
+}
+function GetBaseNameWithoutExtension(filePath) {
+    const baseName = path.basename(filePath);
+    const extension = path.extname(baseName);
+    return baseName.slice(0, -extension.length);
+}
 async function DeleteClassFromProject() {
     if (!WorkspaceProcesses.IsUserInWorkspace())
         return;
-    let projectName = await vscode.window.showInputBox({
-        placeHolder: "Enter the name of project you want to delete class from"
-    });
-    if (checkInput(projectName))
+    let project = await QuickPickFromWorkspaceFolders();
+    if (!project)
         return;
-    projectName = projectName + "";
-    if (checkPath(path.join(globals.glistappsPath, projectName), "A project named " + projectName + " does not exist!"))
-        return;
-    let className = await vscode.window.showInputBox({
-        placeHolder: "Enter the name of the file you want to delete"
+    let fileList = [];
+    GetSubFiles(path.join(project.path, "src")).forEach(file => {
+        if (!fileList.includes(GetBaseNameWithoutExtension(file)) && GetBaseNameWithoutExtension(file) != "main") {
+            fileList.push(GetBaseNameWithoutExtension(file));
+        }
     });
-    if (checkInput(className))
+    let className = await vscode.window.showQuickPick(fileList);
+    if (CheckInput(className))
         return;
     className = className + "";
-    if (checkPath(path.join(globals.glistappsPath, projectName, "src", className + ".h"), "A class named " + className + " does not exist!"))
+    if (CheckPath(path.join(project.path, "src", className + ".h"), "A class named " + className + " does not exist!"))
         return;
-    if (checkPath(path.join(globals.glistappsPath, projectName, "src", className + ".cpp"), "A class named " + className + " does not exist!"))
+    if (CheckPath(path.join(project.path, "src", className + ".cpp"), "A class named " + className + " does not exist!"))
         return;
     let decision = await vscode.window.showInputBox({
-        placeHolder: 'Are you sure about deleting this class? Type "yes" to continue.'
+        placeHolder: 'Are you sure about deleting ' + className + '? Type "yes" to continue.'
     });
     if (!(decision?.toLowerCase() == "yes")) {
         vscode.window.showErrorMessage("Deleting Class Cancelled!");
         return;
     }
-    FileProcesses.RemoveFileFromCMakeLists(path.join(globals.glistappsPath, projectName), className);
+    FileProcesses.RemoveFileFromCMakeLists(project.path, className);
     await WorkspaceProcesses.CloseNonExistentFileTabs();
 }
 exports.DeleteClassFromProject = DeleteClassFromProject;
-function checkInput(name, message = "No input provided.") {
-    if (!name) {
+function CheckInput(input, message = "No input provided.") {
+    if (!input) {
         vscode.window.showErrorMessage(message);
         return true;
     }
     return false;
 }
-exports.checkInput = checkInput;
-function checkPath(inputPath, message = undefined, errorMessageIfNotExist = true) {
+exports.CheckInput = CheckInput;
+function CheckPath(inputPath, message = undefined, errorMessageIfNotExist = true) {
     if (!fs.existsSync(inputPath) && errorMessageIfNotExist) {
         vscode.window.showErrorMessage(message);
         return true;
@@ -177,5 +194,5 @@ function checkPath(inputPath, message = undefined, errorMessageIfNotExist = true
     }
     return false;
 }
-exports.checkPath = checkPath;
+exports.CheckPath = CheckPath;
 //# sourceMappingURL=ProjectProcesses.js.map

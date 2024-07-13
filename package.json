@@ -4,7 +4,7 @@
   "description": "Configures the Visual Studio Code for Glist Engine and makes your job easier.",
   "publisher": "javertus",
   "icon": "images/icon.png",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/javertus/GlistEngine-vscode-extension.git"
@@ -95,8 +95,22 @@
       {
         "command": "glist-extension.update-repos",
         "title": "Glist Engine: Check Repo Updates"
+      },
+      {
+        "command": "glist-extension.run-project",
+        "title": "Run Project",
+        "icon": "$(play)"
       }
-    ]
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "glist-extension.run-project",
+          "group": "navigation",
+          "when": "glist-extension.showRunButton"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -109,7 +123,6 @@
   "devDependencies": {
     "@types/adm-zip": "^0.5.5",
     "@types/fs-extra": "^11.0.4",
-    "@types/git": "^0.0.21",
     "@types/mocha": "^10.0.6",
     "@types/node": "^18.19.39",
     "@types/vscode": "^1.82.0",

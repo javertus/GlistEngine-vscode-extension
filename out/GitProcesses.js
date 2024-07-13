@@ -278,7 +278,7 @@ async function CloneProject() {
     let decision = await vscode.window.showInputBox({
         placeHolder: 'Paste the Project URL here.'
     });
-    if (ProjectProcesses.checkInput(decision))
+    if (ProjectProcesses.CheckInput(decision))
         return;
     decision = decision + "";
     let repoName = GetRepoNameFromUrl(decision);

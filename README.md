@@ -20,6 +20,7 @@ This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEn
 - Closes non-existent file tabs<br>
 - Creates launch configurations if don't exist<br>
 - Installs the required extensions if don't exist<br>
+- Run button<br>
 - Debugging
 
 # Known Issues
