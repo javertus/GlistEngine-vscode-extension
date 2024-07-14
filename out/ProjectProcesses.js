@@ -56,7 +56,7 @@ async function CreateNewProject(projectName = undefined) {
         path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.h'),
         path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.cpp')
     ];
-    OpenFiles(filesToOpen);
+    await OpenFiles(filesToOpen);
 }
 exports.CreateNewProject = CreateNewProject;
 async function OpenFiles(filesToOpen) {
@@ -131,7 +131,7 @@ async function AddClassToProject(baseFilePath, fileBaseName) {
         path.join(project.path, 'src', className + ".h"),
         path.join(project.path, 'src', className + ".cpp")
     ];
-    OpenFiles(filesToOpen);
+    await OpenFiles(filesToOpen);
 }
 exports.AddClassToProject = AddClassToProject;
 function GetSubFiles(directory) {

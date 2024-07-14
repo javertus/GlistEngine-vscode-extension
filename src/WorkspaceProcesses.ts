@@ -20,6 +20,14 @@ export function IsUserInWorkspace(showErrorMessage: boolean = true) {
 export async function UpdateWorkspace(forceCreate: boolean = false) {
 	if (!IsUserInWorkspace(!forceCreate) && !forceCreate) return;
 	try {
+		if (fs.existsSync(globals.glistappsPath) && !extension.extensionJsonData.isGlistInstalled) {
+			extension.extensionJsonData.isGlistInstalled = true;
+			extension.extensionJsonData.firstRun = true;
+			extension.extensionJsonData.secondRun = true;
+			FileProcesses.SaveExtensionJson();
+			vscode.commands.executeCommand('workbench.action.reloadWindow');
+			return;
+		}
 		let workspaceFolders = [];
 		FileProcesses.GetSubfolders(globals.glistappsPath).map(folder => {
 			if (fs.existsSync(path.join(folder, "CMakeLists.txt"))) {
@@ -38,7 +46,7 @@ export async function UpdateWorkspace(forceCreate: boolean = false) {
 		//VS Code will restart if another workspace is active.
 		await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
 	} catch (error) {
-		vscode.window.showErrorMessage(`Failed to create workspace: ${error}`);
+		vscode.window.showErrorMessage(`Failed to create workspace! Are you sure glist engine is installed?: ${error}`);
 	}
 }
 
@@ -47,6 +55,7 @@ export async function AddNewProjectToWorkspace(projectName: string, forceCreate:
 	if (!fs.existsSync(globals.workspaceFilePath) || forceCreate) {
 		extension.extensionJsonData.firstRun = false;
 		extension.extensionJsonData.secondRun = true;
+		extension.extensionJsonData.isGlistInstalled = true;
 		FileProcesses.SaveExtensionJson()
 		await UpdateWorkspace(true);
 		return;
@@ -101,7 +110,7 @@ export async function CloseNonExistentFileTabs() {
 	try {
 		const visibleWindows = vscode.window.tabGroups.activeTabGroup.tabs;
 		for (const visibleWindow of visibleWindows) {
-			if(!visibleWindow.input) continue;
+			if (!visibleWindow.input) continue;
 			const filePath = JSON.parse(JSON.stringify(visibleWindow.input, null, 2));
 			if (fs.existsSync(filePath.uri.fsPath)) continue;
 			await vscode.window.tabGroups.close(visibleWindow, false);

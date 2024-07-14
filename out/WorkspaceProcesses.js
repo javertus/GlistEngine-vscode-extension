@@ -46,6 +46,14 @@ async function UpdateWorkspace(forceCreate = false) {
     if (!IsUserInWorkspace(!forceCreate) && !forceCreate)
         return;
     try {
+        if (fs.existsSync(globals.glistappsPath) && !extension.extensionJsonData.isGlistInstalled) {
+            extension.extensionJsonData.isGlistInstalled = true;
+            extension.extensionJsonData.firstRun = true;
+            extension.extensionJsonData.secondRun = true;
+            FileProcesses.SaveExtensionJson();
+            vscode.commands.executeCommand('workbench.action.reloadWindow');
+            return;
+        }
         let workspaceFolders = [];
         FileProcesses.GetSubfolders(globals.glistappsPath).map(folder => {
             if (fs.existsSync(path.join(folder, "CMakeLists.txt"))) {
@@ -63,7 +71,7 @@ async function UpdateWorkspace(forceCreate = false) {
         await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
     }
     catch (error) {
-        vscode.window.showErrorMessage(`Failed to create workspace: ${error}`);
+        vscode.window.showErrorMessage(`Failed to create workspace! Are you sure glist engine is installed?: ${error}`);
     }
 }
 exports.UpdateWorkspace = UpdateWorkspace;
@@ -72,6 +80,7 @@ async function AddNewProjectToWorkspace(projectName, forceCreate = false) {
     if (!fs.existsSync(globals.workspaceFilePath) || forceCreate) {
         extension.extensionJsonData.firstRun = false;
         extension.extensionJsonData.secondRun = true;
+        extension.extensionJsonData.isGlistInstalled = true;
         FileProcesses.SaveExtensionJson();
         await UpdateWorkspace(true);
         return;

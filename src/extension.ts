@@ -41,6 +41,9 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('glist-extension.clone-plugin', async () => {
 		await GitProcessses.ClonePlugin();
 	});
+	vscode.commands.registerCommand('glist-extension.clone-pluginurl', async () => {
+		await GitProcessses.ClonePluginUrl();
+	});
 	vscode.commands.registerCommand('glist-extension.update-repos', async () => {
 		await GitProcessses.CheckRepoUpdates();
 	});
@@ -90,18 +93,10 @@ async function FirstRunWorker() {
 		await InstallGlistAppTemplate();
 	}
 	if (extensionJsonData.firstRun) {
-		await vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
-			title: 'Installing required extensions for Glist Engine. Please wait...'
-		}, async (progress) => {
-			progress.report({ increment: 0 });
-			await InstallExtensions(progress);
-		});
 		await ConfigureExtension();
 	}
 	else if (extensionJsonData.secondRun) {
-		await OpenFiles();
+		await LoadTabs();
 	}
 }
 
@@ -115,20 +110,23 @@ async function ConfigureExtension() {
 			return;
 		}
 		await FileProcesses.UpdateVSCodeSettings();
+
 		// Install ninja if does not exist
 		fs.ensureDirSync(path.join(globals.glistZbinPath, "CMake"));
-		const ninjaPath = path.join(globals.glistZbinPath, "CMake", "bin", "ninja.zip");
 		if (!fs.existsSync(path.join(globals.glistZbinPath, "CMake", "bin", "ninja.exe"))) {
+			const ninjaPath = path.join(globals.glistZbinPath, "CMake", "bin", "ninja.zip");
 			await FileProcesses.DownloadFile(globals.ninjaUrl, ninjaPath, "Downloading Ninja");
 			FileProcesses.ExtractArchive(ninjaPath, path.join(globals.glistZbinPath, "CMake", "bin"), "");
 			await fs.remove(ninjaPath);
 		}
+
 		extensionJsonData.firstRun = false;
+		extensionJsonData.isGlistInstalled = true;
 		FileProcesses.SaveExtensionJson()
 		// Opens the new workspace. Setup cannot continue after here because vscode restarts. For resuming setup, there is a secondary setup run.
 		await WorkspaceProcesses.UpdateWorkspace(true);
 		// If workspace was already opened before, vscode will not restart so setup can continue.
-		if (WorkspaceProcesses.IsUserInWorkspace(false)) await OpenFiles();
+		if (WorkspaceProcesses.IsUserInWorkspace(false)) await LoadTabs();
 	}
 	catch (error) {
 		vscode.window.showErrorMessage('Failed to create workspace.');
@@ -137,7 +135,7 @@ async function ConfigureExtension() {
 }
 
 
-async function OpenFiles() {
+async function LoadTabs() {
 	// Close all active tabs
 	vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
@@ -146,11 +144,7 @@ async function OpenFiles() {
 		path.join(globals.glistappsPath, 'GlistApp', 'src', 'gCanvas.cpp')
 	];
 
-	filesToOpen.forEach(async file => {
-		const uri = vscode.Uri.file(file);
-		const document = await vscode.workspace.openTextDocument(uri);
-		await vscode.window.showTextDocument(document, { preview: false });
-	});
+	await ProjectProcesses.OpenFiles(filesToOpen);
 
 	extensionJsonData.secondRun = false;
 	FileProcesses.SaveExtensionJson()
@@ -187,6 +181,7 @@ async function CheckUpdates() {
 function ResetExtension() {
 	extensionJsonData.firstRun = true;
 	extensionJsonData.secondRun = true;
+	extensionJsonData.isGlistInstalled = false;
 	FileProcesses.SaveExtensionJson()
 	fs.rmSync(path.join(extensionPath, 'GlistApp'), { recursive: true, force: true });
 	vscode.commands.executeCommand('workbench.action.reloadWindow');
@@ -194,7 +189,7 @@ function ResetExtension() {
 
 function CheckJsonFile() {
 	if (!fs.existsSync(extensionDataFilePath)) {
-		let initialData = { firstRun: true, secondRun: true, installGlistEngine: false };
+		let initialData = { firstRun: true, secondRun: true, installGlistEngine: false, isGlistInstalled: false };
 		fs.writeFileSync(extensionDataFilePath, JSON.stringify(initialData, null, 2));
 
 	}
@@ -208,33 +203,6 @@ async function InstallGlistAppTemplate() {
 	FileProcesses.ExtractArchive(zipFilePath, extensionPath, "");
 	await fs.rename(path.join(extensionPath, 'GlistApp-vscode-main'), path.join(extensionPath, 'GlistApp'));
 	await fs.remove(zipFilePath);
-}
-
-async function InstallExtensions(progress: any) {
-	try {
-		// Required extension names
-		const extensionsToInstall = [
-			'vadimcn.vscode-lldb',
-			'ms-vscode.cpptools',
-		];
-		let incrementValue = 100 / extensionsToInstall.length
-
-		for (let i = 0; i < extensionsToInstall.length; i++) {
-			const extension = vscode.extensions.getExtension(extensionsToInstall[i]);
-			if (extension) {
-				progress.report({ increment: incrementValue })
-			}
-			else {
-				await vscode.commands.executeCommand('workbench.extensions.installExtension', extensionsToInstall[i]);
-				progress.report({ increment: incrementValue })
-			}
-		}
-		vscode.window.showInformationMessage("Required Glist Engine extensions are installed successfully!");
-	}
-	catch (error) {
-		vscode.window.showErrorMessage('Failed to Install Extensions.');
-		console.error(error);
-	}
 }
 
 export function deactivate() { }

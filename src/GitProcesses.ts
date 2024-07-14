@@ -211,6 +211,29 @@ export async function ClonePlugin() {
     }
 }
 
+export async function ClonePluginUrl() {
+    if (!WorkspaceProcesses.IsUserInWorkspace()) return;
+    if (!(await CheckGitInstallation())) return;
+    let input = await vscode.window.showInputBox({
+        placeHolder: 'Paste the Project URL here.'
+    });
+    if (ProjectProcesses.CheckInput(input)) return;
+    input = input + "";
+    let repoName = GetRepoNameFromUrl(input);
+    try {
+        await CloneRepository(input, globals.glistpluginsPath, repoName);
+    }
+    catch (err) {
+        if (err === "User Cancelled") {
+            rimraf(path.join(globals.glistpluginsPath, repoName));
+            vscode.window.showWarningMessage('Cloning cancelled');
+        }
+        else {
+            vscode.window.showErrorMessage(`An error occured while cloning ${repoName}: ${err}`);
+        }
+    }
+}
+
 export async function CloneRepository(url: string, clonePath: string, repoName: string, cancellable = true) {
     if (!(await CheckGitInstallation())) return;
     await vscode.window.withProgress({
@@ -254,14 +277,15 @@ export async function CloneRepository(url: string, clonePath: string, repoName: 
 
 export async function CloneProject() {
     if (!WorkspaceProcesses.IsUserInWorkspace(false)) return;
-    let decision = await vscode.window.showInputBox({
+    if (!(await CheckGitInstallation())) return;
+    let input = await vscode.window.showInputBox({
         placeHolder: 'Paste the Project URL here.'
     });
-    if (ProjectProcesses.CheckInput(decision)) return;
-    decision = decision + "";
-    let repoName = GetRepoNameFromUrl(decision);
+    if (ProjectProcesses.CheckInput(input)) return;
+    input = input + "";
+    let repoName = GetRepoNameFromUrl(input);
     try {
-        await CloneRepository(decision, globals.glistappsPath, repoName)
+        await CloneRepository(input, globals.glistappsPath, repoName)
         await WorkspaceProcesses.AddNewProjectToWorkspace(repoName);
         const filesToOpen = [
             path.join(globals.glistappsPath, repoName, 'src', 'gCanvas.h'),

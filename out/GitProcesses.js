@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CloneProject = exports.CloneRepository = exports.ClonePlugin = exports.UpdateRepository = exports.CheckRepoUpdates = exports.CheckGitInstallation = void 0;
+exports.CloneProject = exports.CloneRepository = exports.ClonePluginUrl = exports.ClonePlugin = exports.UpdateRepository = exports.CheckRepoUpdates = exports.CheckGitInstallation = void 0;
 const child_process = __importStar(require("child_process"));
 const process = __importStar(require("process"));
 const path = __importStar(require("path"));
@@ -232,6 +232,32 @@ async function ClonePlugin() {
     }
 }
 exports.ClonePlugin = ClonePlugin;
+async function ClonePluginUrl() {
+    if (!WorkspaceProcesses.IsUserInWorkspace())
+        return;
+    if (!(await CheckGitInstallation()))
+        return;
+    let input = await vscode.window.showInputBox({
+        placeHolder: 'Paste the Project URL here.'
+    });
+    if (ProjectProcesses.CheckInput(input))
+        return;
+    input = input + "";
+    let repoName = GetRepoNameFromUrl(input);
+    try {
+        await CloneRepository(input, globals.glistpluginsPath, repoName);
+    }
+    catch (err) {
+        if (err === "User Cancelled") {
+            (0, rimraf_1.rimraf)(path.join(globals.glistpluginsPath, repoName));
+            vscode.window.showWarningMessage('Cloning cancelled');
+        }
+        else {
+            vscode.window.showErrorMessage(`An error occured while cloning ${repoName}: ${err}`);
+        }
+    }
+}
+exports.ClonePluginUrl = ClonePluginUrl;
 async function CloneRepository(url, clonePath, repoName, cancellable = true) {
     if (!(await CheckGitInstallation()))
         return;
@@ -275,15 +301,17 @@ exports.CloneRepository = CloneRepository;
 async function CloneProject() {
     if (!WorkspaceProcesses.IsUserInWorkspace(false))
         return;
-    let decision = await vscode.window.showInputBox({
+    if (!(await CheckGitInstallation()))
+        return;
+    let input = await vscode.window.showInputBox({
         placeHolder: 'Paste the Project URL here.'
     });
-    if (ProjectProcesses.CheckInput(decision))
+    if (ProjectProcesses.CheckInput(input))
         return;
-    decision = decision + "";
-    let repoName = GetRepoNameFromUrl(decision);
+    input = input + "";
+    let repoName = GetRepoNameFromUrl(input);
     try {
-        await CloneRepository(decision, globals.glistappsPath, repoName);
+        await CloneRepository(input, globals.glistappsPath, repoName);
         await WorkspaceProcesses.AddNewProjectToWorkspace(repoName);
         const filesToOpen = [
             path.join(globals.glistappsPath, repoName, 'src', 'gCanvas.h'),

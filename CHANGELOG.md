@@ -1,5 +1,12 @@
 # Change Log
 
+# 1.3.6
+
+## New
+
+- Minor bug fix
+- Clones plugin from given URL
+
 # 1.3.5
 
 ## New

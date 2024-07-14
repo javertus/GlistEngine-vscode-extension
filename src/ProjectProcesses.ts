@@ -29,7 +29,7 @@ export async function CreateNewProject(projectName: any = undefined) {
 		path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.h'),
 		path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.cpp')
 	];
-	OpenFiles(filesToOpen);
+	await OpenFiles(filesToOpen);
 }
 
 export async function OpenFiles(filesToOpen: string[]) {
@@ -98,7 +98,7 @@ export async function AddClassToProject(baseFilePath: string, fileBaseName: stri
 		path.join(project.path, 'src', className + ".h"),
 		path.join(project.path, 'src', className + ".cpp")
 	];
-	OpenFiles(filesToOpen);
+	await OpenFiles(filesToOpen);
 }
 
 function GetSubFiles(directory: string) {
