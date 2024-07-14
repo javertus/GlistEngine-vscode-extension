@@ -4,7 +4,7 @@
   "description": "Configures the Visual Studio Code for Glist Engine and makes your job easier.",
   "publisher": "javertus",
   "icon": "images/icon.png",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "repository": {
     "type": "git",
     "url": "https://github.com/javertus/GlistEngine-vscode-extension.git"
@@ -44,6 +44,10 @@
           "type": "boolean",
           "default": false,
           "description": "Enable auto-updating the projects if there are updates."
+        },
+        "glistengine.glist.disk": {
+          "type": "string",
+          "description": "Default disk for Glist Engine."
         }
       }
     },

@@ -23,11 +23,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.vscodeSettingsPath = exports.vscodeSettings = exports.ninjaUrl = exports.gitUrl = exports.glistCmakeUrl = exports.glistClangUrl = exports.glistEngineUrl = exports.pluginReposUrl = exports.glistPluginsUrl = exports.glistAppUrl = exports.glistPath = exports.glistpluginsPath = exports.workspaceFilePath = exports.glistZbinPath = exports.glistEnginePath = exports.glistappsPath = exports.tempPath = exports.currentDrive = exports.currentDirectory = void 0;
+exports.vscodeSettingsPath = exports.vscodeSettings = exports.ninjaUrl = exports.gitUrl = exports.glistCmakeUrl = exports.glistClangUrl = exports.glistEngineUrl = exports.pluginReposUrl = exports.glistPluginsUrl = exports.glistAppUrl = exports.glistPath = exports.glistpluginsPath = exports.workspaceFilePath = exports.glistZbinPath = exports.glistEnginePath = exports.glistappsPath = exports.tempPath = exports.currentDrive = void 0;
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
-exports.currentDirectory = process.cwd();
-exports.currentDrive = path.parse(exports.currentDirectory).root;
+const FileProcesses = __importStar(require("./FileProcesses"));
+exports.currentDrive = FileProcesses.GetGlistDrive();
 exports.tempPath = path.join(os.tmpdir(), "GlistVSCodeInstaller");
 exports.glistappsPath = path.join(exports.currentDrive, "\\dev\\glist\\myglistapps\\");
 exports.glistEnginePath = path.join(exports.currentDrive, "\\dev\\glist\\GlistEngine\\engine");

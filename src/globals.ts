@@ -1,10 +1,10 @@
 import * as path from 'path';
 import * as os from 'os';
+import * as FileProcesses from './FileProcesses';
 
 
 
-export const currentDirectory = process.cwd();
-export const currentDrive = path.parse(currentDirectory).root;
+export const currentDrive = FileProcesses.GetGlistDrive();
 
 export const tempPath = path.join(os.tmpdir(), "GlistVSCodeInstaller");
 export const glistappsPath = path.join(currentDrive, "\\dev\\glist\\myglistapps\\");

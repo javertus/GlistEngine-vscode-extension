@@ -1,5 +1,11 @@
 # Change Log
 
+# 1.3.5
+
+## New
+
+- Fixed [Issue](https://github.com/javertus/GlistEngine-vscode-extension/issues/1)
+
 # 1.3.4
 
 ## New

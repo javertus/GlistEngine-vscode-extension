@@ -4,6 +4,7 @@ import * as path from 'path';
 import AdmZip from 'adm-zip';
 import axios from 'axios';
 import json5 from 'json5'
+import { execSync } from 'child_process';
 import { rimraf, rimrafSync } from 'rimraf';
 import * as extension from './extension';
 import * as globals from './globals';
@@ -189,4 +190,44 @@ function ArraysUnion(a: any[], b: any[]) {
 		set.add(item);
 	}
 	return Array.from(set);
+}
+
+function GetDisks(): string[] {
+    let disks: string[] = [];
+    const result = execSync('wmic logicaldisk get name').toString();
+    disks = result.split('\n').map(line => line.trim()).filter(line => line && line !== 'Name');
+    return disks;
+}
+
+function CheckDirectoryOnDisks(dirName: string): string[] {
+    const disks = GetDisks();
+    const foundDisks: string[] = [];
+
+    disks.forEach(disk => {
+        const fullPath = path.join(disk, dirName);
+        if (fs.existsSync(fullPath)) {
+            foundDisks.push(disk);
+        }
+    });
+
+    return foundDisks;
+}
+
+export function GetGlistDrive() {
+    const foundDisks = CheckDirectoryOnDisks('dev\\glist');
+    let disk = vscode.workspace.getConfiguration('glistengine').get<string>('glist.disk');
+    if (disk) return disk;
+    if (foundDisks.length == 0) {
+        vscode.window.showWarningMessage(`Glist Engine not found in any disks! Setting glist disk as: ${GetDisks()[0]} You can change the disk from Visual Studio Code settings.`)
+        vscode.workspace.getConfiguration('glistengine').update("glist.disk", GetDisks()[0], 1);
+        return GetDisks()[0];
+    } 
+    else if (foundDisks.length == 1) {
+        return foundDisks[0];
+    }
+    else {
+        vscode.window.showWarningMessage(`More than one glist paths are found! Setting current glist path to: ${foundDisks[0]} You can change the disk from Visual Studio Code settings.`)
+        vscode.workspace.getConfiguration('glistengine').update("glist.disk", foundDisks[0], 1);
+        return foundDisks[0];
+    }
 }

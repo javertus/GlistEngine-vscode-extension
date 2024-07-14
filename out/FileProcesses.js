@@ -26,13 +26,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DeleteFolder = exports.GetSubfolders = exports.ExtractArchive = exports.SaveExtensionJson = exports.DownloadFile = exports.RemoveFileFromCMakeLists = exports.AddFileToCMakeLists = exports.ReplaceText = exports.UpdateVSCodeSettings = void 0;
+exports.GetGlistDrive = exports.DeleteFolder = exports.GetSubfolders = exports.ExtractArchive = exports.SaveExtensionJson = exports.DownloadFile = exports.RemoveFileFromCMakeLists = exports.AddFileToCMakeLists = exports.ReplaceText = exports.UpdateVSCodeSettings = void 0;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
 const adm_zip_1 = __importDefault(require("adm-zip"));
 const axios_1 = __importDefault(require("axios"));
 const json5_1 = __importDefault(require("json5"));
+const child_process_1 = require("child_process");
 const rimraf_1 = require("rimraf");
 const extension = __importStar(require("./extension"));
 const globals = __importStar(require("./globals"));
@@ -208,4 +209,41 @@ function ArraysUnion(a, b) {
     }
     return Array.from(set);
 }
+function GetDisks() {
+    let disks = [];
+    const result = (0, child_process_1.execSync)('wmic logicaldisk get name').toString();
+    disks = result.split('\n').map(line => line.trim()).filter(line => line && line !== 'Name');
+    return disks;
+}
+function CheckDirectoryOnDisks(dirName) {
+    const disks = GetDisks();
+    const foundDisks = [];
+    disks.forEach(disk => {
+        const fullPath = path.join(disk, dirName);
+        if (fs.existsSync(fullPath)) {
+            foundDisks.push(disk);
+        }
+    });
+    return foundDisks;
+}
+function GetGlistDrive() {
+    const foundDisks = CheckDirectoryOnDisks('dev\\glist');
+    let disk = vscode.workspace.getConfiguration('glistengine').get('glist.disk');
+    if (disk)
+        return disk;
+    if (foundDisks.length == 0) {
+        vscode.window.showWarningMessage(`Glist Engine not found in any disks! Setting glist disk as: ${GetDisks()[0]} You can change the disk from Visual Studio Code settings.`);
+        vscode.workspace.getConfiguration('glistengine').update("glist.disk", GetDisks()[0], 1);
+        return GetDisks()[0];
+    }
+    else if (foundDisks.length == 1) {
+        return foundDisks[0];
+    }
+    else {
+        vscode.window.showWarningMessage(`More than one glist paths are found! Setting current glist path to: ${foundDisks[0]} You can change the disk from Visual Studio Code settings.`);
+        vscode.workspace.getConfiguration('glistengine').update("glist.disk", foundDisks[0], 1);
+        return foundDisks[0];
+    }
+}
+exports.GetGlistDrive = GetGlistDrive;
 //# sourceMappingURL=FileProcesses.js.map
