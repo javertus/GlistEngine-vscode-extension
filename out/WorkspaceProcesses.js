@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LaunchWorkspace = exports.CloseNonExistentFileTabs = exports.DeleteProjectFromWorkspace = exports.AddNewProjectToWorkspace = exports.UpdateWorkspace = exports.IsUserInWorkspace = void 0;
+exports.CheckLaunchConfigurations = exports.LaunchWorkspace = exports.CloseNonExistentFileTabs = exports.DeleteProjectFromWorkspace = exports.AddNewProjectToWorkspace = exports.UpdateWorkspace = exports.IsUserInWorkspace = void 0;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
@@ -47,11 +47,10 @@ async function UpdateWorkspace(forceCreate = false) {
         return;
     try {
         if (fs.existsSync(globals.glistappsPath) && !extension.extensionJsonData.isGlistInstalled) {
-            extension.extensionJsonData.isGlistInstalled = true;
             extension.extensionJsonData.firstRun = true;
             extension.extensionJsonData.secondRun = true;
             FileProcesses.SaveExtensionJson();
-            vscode.commands.executeCommand('workbench.action.reloadWindow');
+            extension.ConfigureExtension();
             return;
         }
         let workspaceFolders = [];
@@ -71,7 +70,7 @@ async function UpdateWorkspace(forceCreate = false) {
         await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
     }
     catch (error) {
-        vscode.window.showErrorMessage(`Failed to create workspace! Are you sure glist engine is installed?: ${error}`);
+        vscode.window.showErrorMessage(`Failed to create workspace! Are you sure glist engine is installed? ${error}`);
     }
 }
 exports.UpdateWorkspace = UpdateWorkspace;
@@ -156,4 +155,5 @@ async function CheckLaunchConfigurations() {
         }
     });
 }
+exports.CheckLaunchConfigurations = CheckLaunchConfigurations;
 //# sourceMappingURL=WorkspaceProcesses.js.map

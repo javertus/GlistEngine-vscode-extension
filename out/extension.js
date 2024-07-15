@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deactivate = exports.activate = exports.extensionDataFilePath = exports.extensionPath = exports.extensionJsonData = void 0;
+exports.deactivate = exports.ConfigureExtension = exports.activate = exports.extensionDataFilePath = exports.extensionPath = exports.extensionJsonData = void 0;
 const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs-extra"));
@@ -100,6 +100,7 @@ async function FirstRunWorker() {
             WorkspaceProcesses.CloseNonExistentFileTabs();
         });
         await WorkspaceProcesses.CloseNonExistentFileTabs();
+        WorkspaceProcesses.CheckLaunchConfigurations();
     }
     if (exports.extensionJsonData.installGlistEngine) {
         exports.extensionJsonData.installGlistEngine = false;
@@ -125,15 +126,16 @@ async function ConfigureExtension() {
             FileProcesses.SaveExtensionJson();
             return;
         }
-        await FileProcesses.UpdateVSCodeSettings();
         // Install ninja if does not exist
         fs.ensureDirSync(path.join(globals.glistZbinPath, "CMake"));
         if (!fs.existsSync(path.join(globals.glistZbinPath, "CMake", "bin", "ninja.exe"))) {
             const ninjaPath = path.join(globals.glistZbinPath, "CMake", "bin", "ninja.zip");
             await FileProcesses.DownloadFile(globals.ninjaUrl, ninjaPath, "Downloading Ninja");
             FileProcesses.ExtractArchive(ninjaPath, path.join(globals.glistZbinPath, "CMake", "bin"), "");
-            await fs.remove(ninjaPath);
+            fs.removeSync(ninjaPath);
         }
+        if (await FileProcesses.UpdateVSCodeSettings())
+            return;
         exports.extensionJsonData.firstRun = false;
         exports.extensionJsonData.isGlistInstalled = true;
         FileProcesses.SaveExtensionJson();
@@ -148,6 +150,7 @@ async function ConfigureExtension() {
         console.error(error);
     }
 }
+exports.ConfigureExtension = ConfigureExtension;
 async function LoadTabs() {
     // Close all active tabs
     vscode.commands.executeCommand('workbench.action.closeAllEditors');

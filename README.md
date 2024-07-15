@@ -13,7 +13,7 @@ This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEn
 - Creates empty Glist Project<br>
 - Clones project from given URL<br>
 - Clones plugin from given URL<br>
-- Switchs into Glist workspace<br>
+- Switches into Glist workspace<br>
 - Adds all Glist projects into your workspace<br>
 - Creates new canvas or empty class to given project<br>
 - Deletes Project<br>

@@ -45,7 +45,7 @@ async function UpdateVSCodeSettings() {
             settings = json5_1.default.parse(fileContent);
         }
         else {
-            await fs.writeFile(globals.vscodeSettingsPath, JSON.stringify(globals.vscodeSettings, null, 2));
+            fs.writeFileSync(globals.vscodeSettingsPath, JSON.stringify(globals.vscodeSettings, null, 2));
             vscode.commands.executeCommand('workbench.action.reloadWindow');
             return true;
         }
@@ -78,7 +78,7 @@ async function UpdateVSCodeSettings() {
             }
         }
         if (isChanged) {
-            await fs.writeFile(globals.vscodeSettingsPath, JSON.stringify(settings, null, 2));
+            fs.writeFileSync(globals.vscodeSettingsPath, JSON.stringify(settings, null, 2));
             vscode.commands.executeCommand('workbench.action.reloadWindow');
         }
         return isChanged;

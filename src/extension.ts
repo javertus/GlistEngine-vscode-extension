@@ -82,6 +82,7 @@ async function FirstRunWorker() {
 			WorkspaceProcesses.CloseNonExistentFileTabs();
 		});
 		await WorkspaceProcesses.CloseNonExistentFileTabs();
+		WorkspaceProcesses.CheckLaunchConfigurations();
 	} 
 
 	if (extensionJsonData.installGlistEngine) {
@@ -100,7 +101,7 @@ async function FirstRunWorker() {
 	}
 }
 
-async function ConfigureExtension() {
+export async function ConfigureExtension() {
 	try {
 		// Do not create workspace and stop setup process if glistapps does not exist (Also Meaning Glist Engine is not installed.)
 		if (!fs.existsSync(globals.glistappsPath)) {
@@ -109,7 +110,6 @@ async function ConfigureExtension() {
 			FileProcesses.SaveExtensionJson()
 			return;
 		}
-		await FileProcesses.UpdateVSCodeSettings();
 
 		// Install ninja if does not exist
 		fs.ensureDirSync(path.join(globals.glistZbinPath, "CMake"));
@@ -117,8 +117,10 @@ async function ConfigureExtension() {
 			const ninjaPath = path.join(globals.glistZbinPath, "CMake", "bin", "ninja.zip");
 			await FileProcesses.DownloadFile(globals.ninjaUrl, ninjaPath, "Downloading Ninja");
 			FileProcesses.ExtractArchive(ninjaPath, path.join(globals.glistZbinPath, "CMake", "bin"), "");
-			await fs.remove(ninjaPath);
+			fs.removeSync(ninjaPath);
 		}
+
+		if(await FileProcesses.UpdateVSCodeSettings()) return;
 
 		extensionJsonData.firstRun = false;
 		extensionJsonData.isGlistInstalled = true;

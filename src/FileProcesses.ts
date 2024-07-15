@@ -18,7 +18,7 @@ export async function UpdateVSCodeSettings(): Promise<boolean> {
 			settings = json5.parse(fileContent);
 		}
 		else {
-			await fs.writeFile(globals.vscodeSettingsPath, JSON.stringify(globals.vscodeSettings, null, 2));
+			fs.writeFileSync(globals.vscodeSettingsPath, JSON.stringify(globals.vscodeSettings, null, 2));
 			vscode.commands.executeCommand('workbench.action.reloadWindow');
 			return true;
 		}
@@ -51,7 +51,7 @@ export async function UpdateVSCodeSettings(): Promise<boolean> {
 			}
 		}
 		if (isChanged) {
-			await fs.writeFile(globals.vscodeSettingsPath, JSON.stringify(settings, null, 2));
+			fs.writeFileSync(globals.vscodeSettingsPath, JSON.stringify(settings, null, 2));
 			vscode.commands.executeCommand('workbench.action.reloadWindow');
 		}
 		return isChanged;
@@ -160,8 +160,6 @@ export async function DownloadFile(url: string, dest: string, message: string) {
 		fs.writeFileSync(dest, response.data);
 	});
 }
-
-
 
 export function SaveExtensionJson() {
 	fs.writeFileSync(extension.extensionDataFilePath, JSON.stringify(extension.extensionJsonData, null, 2));

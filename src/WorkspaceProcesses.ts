@@ -21,11 +21,10 @@ export async function UpdateWorkspace(forceCreate: boolean = false) {
 	if (!IsUserInWorkspace(!forceCreate) && !forceCreate) return;
 	try {
 		if (fs.existsSync(globals.glistappsPath) && !extension.extensionJsonData.isGlistInstalled) {
-			extension.extensionJsonData.isGlistInstalled = true;
 			extension.extensionJsonData.firstRun = true;
 			extension.extensionJsonData.secondRun = true;
 			FileProcesses.SaveExtensionJson();
-			vscode.commands.executeCommand('workbench.action.reloadWindow');
+			extension.ConfigureExtension();
 			return;
 		}
 		let workspaceFolders = [];
@@ -46,7 +45,7 @@ export async function UpdateWorkspace(forceCreate: boolean = false) {
 		//VS Code will restart if another workspace is active.
 		await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
 	} catch (error) {
-		vscode.window.showErrorMessage(`Failed to create workspace! Are you sure glist engine is installed?: ${error}`);
+		vscode.window.showErrorMessage(`Failed to create workspace! Are you sure glist engine is installed? ${error}`);
 	}
 }
 
@@ -130,7 +129,7 @@ export async function LaunchWorkspace() {
 	}
 }
 
-async function CheckLaunchConfigurations() {
+export async function CheckLaunchConfigurations() {
 	FileProcesses.GetSubfolders(globals.glistappsPath).map(folder => {
 		if (fs.existsSync(path.join(folder, "CMakeLists.txt"))) {
 			if (!fs.existsSync(path.join(folder, ".vscode"))) {
