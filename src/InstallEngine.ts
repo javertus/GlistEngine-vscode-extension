@@ -15,11 +15,10 @@ export async function InstallGlistEngine() {
 		return;
 	}
 
-	extension.extensionJsonData.installGlistEngine = true;
-	FileProcesses.SaveExtensionJson();
 	if (await FileProcesses.UpdateVSCodeSettings()) return;
 	extension.extensionJsonData.installGlistEngine = false;
 	FileProcesses.SaveExtensionJson();
+
 	const result = await vscode.window.showInformationMessage(
 		'This action will install the Glist Engine and its dependencies. Current Glist Engine installation in /glist folder will be modified if exist. Your projects and plugins will not affected. Do you want to continue?',
 		{ modal: true },
@@ -70,7 +69,7 @@ export function createDirectories() {
 async function InstallEngine(progress: vscode.Progress<{ message: string, increment: number }>) {
 	progress.report({ message: "Installing Engine", increment: 0 });
 	await fs.remove(path.join(globals.glistPath, "GlistEngine"));
-	await GitProcesses.CloneRepository(globals.glistEngineUrl, globals.glistPath, "GlistEngine", false);
+	await GitProcesses.CloneRepository(globals.glistEngineUrl, globals.glistPath, false);
 }
 
 async function InstallCmake(progress: vscode.Progress<{ message: string, increment: number }>) {

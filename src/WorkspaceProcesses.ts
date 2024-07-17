@@ -10,7 +10,7 @@ import * as extension from './extension';
 export function IsUserInWorkspace(showErrorMessage: boolean = true) {
 	let folders = vscode.workspace.workspaceFolders;
 	let len = folders?.length;
-	if (!folders || !len || folders[len - 1].uri.fsPath.toLowerCase() != globals.glistEnginePath.toLowerCase()) {
+	if (!folders || !len || !folders?.filter(folder => folder.uri.fsPath.toLowerCase().includes(globals.glistEnginePath.toLowerCase()))) {
 		if (showErrorMessage) vscode.window.showErrorMessage("You should switch to Glist workspace to do that.");
 		return false;
 	}
@@ -45,11 +45,11 @@ export async function UpdateWorkspace(forceCreate: boolean = false) {
 		//VS Code will restart if another workspace is active.
 		await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
 	} catch (error) {
-		vscode.window.showErrorMessage(`Failed to create workspace! Are you sure glist engine is installed? ${error}`);
+		vscode.window.showErrorMessage(`Failed to create workspace! Are you sure Glist Engine is installed? ${error}`);
 	}
 }
 
-export async function AddNewProjectToWorkspace(projectName: string, forceCreate: boolean = false) {
+export async function AddProjectToWorkspace(projectName: string, forceCreate: boolean = false) {
 	CheckLaunchConfigurations();
 	if (!fs.existsSync(globals.workspaceFilePath) || forceCreate) {
 		extension.extensionJsonData.firstRun = false;
@@ -59,30 +59,30 @@ export async function AddNewProjectToWorkspace(projectName: string, forceCreate:
 		await UpdateWorkspace(true);
 		return;
 	}
-	const jsonString = fs.readFileSync(globals.workspaceFilePath, 'utf-8');
-	const jsonData = JSON.parse(jsonString);
-
-	// Extract the engine path if it exists
-	const enginePath = jsonData.folders.find((folder: { path: string }) => folder.path.includes('GlistEngine'));
-	jsonData.folders = jsonData.folders.filter((folder: { path: string }) => !folder.path.includes('GlistEngine'));
-
-	// Add the new path and sort the folders array alphabetically by path
-	jsonData.folders.push({ path: path.join(globals.glistappsPath, projectName) });
-	jsonData.folders.sort((a: { path: string }, b: { path: string }) => a.path.localeCompare(b.path));
-
-	// Re-add the engine path at the end if it was found
-	if (enginePath) {
-		jsonData.folders.push(enginePath);
-	}
-
-	// Convert the updated data back to JSON format and write it to the file
-	fs.writeFileSync(globals.workspaceFilePath, JSON.stringify(jsonData, null, 2));
-
+	SortWorkspaceJson(projectName);
 	//VS Code will restart if another workspace is active.
 	await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
 }
 
-export function DeleteProjectFromWorkspace(projectName: string) {
+export function SortWorkspaceJson(projectName: string) {
+	const jsonString = fs.readFileSync(globals.workspaceFilePath, 'utf-8');
+	const jsonData = JSON.parse(jsonString);
+	const enginePath = {path: globals.glistEnginePath};
+
+	jsonData.folders = jsonData.folders.filter((folder: { path: string }) => !folder.path.includes(globals.glistEnginePath));
+
+	// Add the new path and sort the folders array alphabetically by path
+	if(projectName) jsonData.folders.push({ path: path.join(globals.glistappsPath, projectName) });
+	jsonData.folders.sort((a: { path: string }, b: { path: string }) => path.basename(a.path).localeCompare(path.basename(b.path)));
+
+	// Re-add the engine path
+	jsonData.folders.push(enginePath);
+
+	// Convert the updated data back to JSON format and write it to the file
+	fs.writeFileSync(globals.workspaceFilePath, JSON.stringify(jsonData, null, 2));
+}
+
+export function RemoveProjectFromWorkspace(projectName: string) {
 	if (!fs.existsSync(globals.workspaceFilePath)) {
 		vscode.window.showWarningMessage('Workspace file does not exist.');
 		return;
@@ -120,6 +120,10 @@ export async function CloseNonExistentFileTabs() {
 	}
 }
 
+export async function ReloadWorkspace() {
+	vscode.commands.executeCommand('workbench.action.reloadWindow'); // Throws exception if awaited!
+}
+
 export async function LaunchWorkspace() {
 	if (fs.existsSync(globals.workspaceFilePath)) {
 		await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
@@ -134,7 +138,7 @@ export async function CheckLaunchConfigurations() {
 		if (fs.existsSync(path.join(folder, "CMakeLists.txt"))) {
 			if (!fs.existsSync(path.join(folder, ".vscode"))) {
 				vscode.window.showInformationMessage("Creating launch configurations for " + path.basename(folder));
-				fs.cpSync(path.join(extension.extensionPath, 'GlistApp', '.vscode'), path.join(folder, '.vscode'), { recursive: true });
+				fs.cpSync(path.join(extension.extensionPath, 'GlistApp-vscode', '.vscode'), path.join(folder, '.vscode'), { recursive: true });
 			}
 		}
 	});

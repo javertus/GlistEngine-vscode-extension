@@ -38,8 +38,6 @@ async function InstallGlistEngine() {
         vscode.window.showErrorMessage("You can't run this action while installing is in process!");
         return;
     }
-    extension.extensionJsonData.installGlistEngine = true;
-    FileProcesses.SaveExtensionJson();
     if (await FileProcesses.UpdateVSCodeSettings())
         return;
     extension.extensionJsonData.installGlistEngine = false;
@@ -89,7 +87,7 @@ exports.createDirectories = createDirectories;
 async function InstallEngine(progress) {
     progress.report({ message: "Installing Engine", increment: 0 });
     await fs.remove(path.join(globals.glistPath, "GlistEngine"));
-    await GitProcesses.CloneRepository(globals.glistEngineUrl, globals.glistPath, "GlistEngine", false);
+    await GitProcesses.CloneRepository(globals.glistEngineUrl, globals.glistPath, false);
 }
 async function InstallCmake(progress) {
     const zipFilePath = path.join(globals.tempPath, 'CMake.zip');

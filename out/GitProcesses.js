@@ -65,13 +65,18 @@ async function InstallGit() {
         vscode.window.showErrorMessage("You can't run this action before Git is installed!");
         return;
     }
-    installation = true;
-    fs.ensureDirSync(globals.tempPath);
-    const zipFilePath = path.join(globals.tempPath, 'git.zip');
-    await FileProcesses.DownloadFile(globals.gitUrl, zipFilePath, "Downloading Git");
-    fs.ensureDir(path.join(extension.extensionPath, "git"));
-    FileProcesses.ExtractArchive(zipFilePath, path.join(extension.extensionPath, "git"), "Git Installed.");
-    installation = false;
+    try {
+        installation = true;
+        fs.ensureDirSync(globals.tempPath);
+        const zipFilePath = path.join(globals.tempPath, 'git.zip');
+        await FileProcesses.DownloadFile(globals.gitUrl, zipFilePath, "Downloading Git");
+        fs.ensureDir(path.join(extension.extensionPath, "git"));
+        FileProcesses.ExtractArchive(zipFilePath, path.join(extension.extensionPath, "git"), "Git Installed.");
+        installation = false;
+    }
+    catch (err) {
+        vscode.window.showErrorMessage(`Failed to install Git! ${err}`);
+    }
 }
 async function CheckRepoUpdates() {
     if (!WorkspaceProcesses.IsUserInWorkspace())
@@ -92,7 +97,7 @@ async function CheckRepoUpdates() {
             folders.push({ name: path.basename(folder), path: folder });
         }
     });
-    let selection = await vscode.window.showQuickPick(folders.map(folder => folder.name + ((folder.path) ? ` (${folder.path})` : "")), { title: "Select the repo you want to check updates" });
+    let selection = await vscode.window.showQuickPick(folders.map(folder => folder.name + ((folder.path) ? ` (${folder.path})` : "")), { title: "Select the repo you want to update" });
     if (selection == folders[0].name) {
         for (let i = 1; i < folders.length; i++) {
             await UpdateRepository(folders[i].path);
@@ -217,7 +222,7 @@ async function ClonePlugin() {
         selection = await vscode.window.showQuickPick(repoNames, { title: "Select the plugin you want to clone" });
         if (!selection)
             return;
-        await CloneRepository(globals.glistPluginsUrl + selection, globals.glistpluginsPath, selection);
+        await CloneRepository(globals.glistPluginsUrl + selection, globals.glistpluginsPath);
     }
     catch (error) {
         if (error === "User Cancelled") {
@@ -245,7 +250,7 @@ async function ClonePluginUrl() {
     input = input + "";
     let repoName = GetRepoNameFromUrl(input);
     try {
-        await CloneRepository(input, globals.glistpluginsPath, repoName);
+        await CloneRepository(input, globals.glistpluginsPath);
     }
     catch (err) {
         if (err === "User Cancelled") {
@@ -258,15 +263,16 @@ async function ClonePluginUrl() {
     }
 }
 exports.ClonePluginUrl = ClonePluginUrl;
-async function CloneRepository(url, clonePath, repoName, cancellable = true) {
+async function CloneRepository(url, clonePath, cancellable = true, title = 'Cloning Repository') {
     if (!(await CheckGitInstallation()))
         return;
     await vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
-        title: 'Cloning Repository',
+        title: title,
         cancellable: cancellable
     }, async (progress, token) => {
         return new Promise((resolve, reject) => {
+            const repoName = GetRepoNameFromUrl(url);
             let gitProcess = child_process.spawn('git', ['clone', '--progress', url, path.join(clonePath, repoName)]);
             let lastIncrementVal = 0;
             gitProcess.stderr.on('data', (data) => {
@@ -311,8 +317,8 @@ async function CloneProject() {
     input = input + "";
     let repoName = GetRepoNameFromUrl(input);
     try {
-        await CloneRepository(input, globals.glistappsPath, repoName);
-        await WorkspaceProcesses.AddNewProjectToWorkspace(repoName);
+        await CloneRepository(input, globals.glistappsPath);
+        await WorkspaceProcesses.AddProjectToWorkspace(repoName);
         const filesToOpen = [
             path.join(globals.glistappsPath, repoName, 'src', 'gCanvas.h'),
             path.join(globals.glistappsPath, repoName, 'src', 'gCanvas.cpp')

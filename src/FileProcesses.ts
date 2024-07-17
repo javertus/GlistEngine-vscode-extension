@@ -5,6 +5,7 @@ import AdmZip from 'adm-zip';
 import axios from 'axios';
 import json5 from 'json5'
 import { execSync } from 'child_process';
+import * as WorkspaceProcesses from './WorkspaceProcesses'
 import { rimraf, rimrafSync } from 'rimraf';
 import * as extension from './extension';
 import * as globals from './globals';
@@ -19,7 +20,7 @@ export async function UpdateVSCodeSettings(): Promise<boolean> {
 		}
 		else {
 			fs.writeFileSync(globals.vscodeSettingsPath, JSON.stringify(globals.vscodeSettings, null, 2));
-			vscode.commands.executeCommand('workbench.action.reloadWindow');
+			WorkspaceProcesses.ReloadWorkspace();
 			return true;
 		}
 
@@ -52,7 +53,7 @@ export async function UpdateVSCodeSettings(): Promise<boolean> {
 		}
 		if (isChanged) {
 			fs.writeFileSync(globals.vscodeSettingsPath, JSON.stringify(settings, null, 2));
-			vscode.commands.executeCommand('workbench.action.reloadWindow');
+			WorkspaceProcesses.ReloadWorkspace();
 		}
 		return isChanged;
 	} catch (err) {
@@ -224,7 +225,7 @@ export function GetGlistDrive() {
         return foundDisks[0];
     }
     else {
-        vscode.window.showWarningMessage(`More than one glist paths are found! Setting current glist path to: ${foundDisks[0]} You can change the disk from Visual Studio Code settings.`)
+        vscode.window.showWarningMessage(`More than one glist installations are found! Setting current glist disk as: ${foundDisks[0]} You can change the disk from Visual Studio Code settings.`)
         vscode.workspace.getConfiguration('glistengine').update("glist.disk", foundDisks[0], 1);
         return foundDisks[0];
     }

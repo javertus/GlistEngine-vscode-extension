@@ -1,5 +1,13 @@
 # Change Log
 
+# 1.3.8
+
+## New
+
+- Some bug fixes
+- Engine folder isn't removable from workspace anymore
+- Adds projects to workspace by copying into myglistapps folder
+
 # 1.3.7
 
 ## New

@@ -19,11 +19,12 @@ export async function CreateNewProject(projectName: any = undefined) {
 	if (CheckInput(projectName)) return;
 	projectName = projectName + "";
 	if (!CheckPath(path.join(globals.glistappsPath, projectName), "A project named " + projectName + " already exist. Opening already existing project...", false)) {
-		fs.cpSync(path.join(extension.extensionPath, 'GlistApp'), path.join(globals.glistappsPath, projectName), { recursive: true });
+		fs.cpSync(path.join(extension.extensionPath, 'GlistApp-vscode'), path.join(globals.glistappsPath, projectName), { recursive: true });
+		fs.rmSync(path.join(globals.glistappsPath, projectName, ".git"), { recursive: true, force: true });
 		vscode.window.showInformationMessage('Created new Project.');
 	}
 
-	await WorkspaceProcesses.AddNewProjectToWorkspace(projectName, forceCreate);
+	await WorkspaceProcesses.AddProjectToWorkspace(projectName, forceCreate);
 	if(forceCreate) return;
 	const filesToOpen = [
 		path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.h'),
@@ -52,11 +53,11 @@ export async function DeleteProject() {
 		vscode.window.showErrorMessage("Deleting Project Cancelled!");
 		return;
 	}
-	WorkspaceProcesses.DeleteProjectFromWorkspace(project.name)
+	WorkspaceProcesses.RemoveProjectFromWorkspace(project.name)
 	FileProcesses.DeleteFolder(project.path);
 	extension.extensionJsonData.deleteFolder = project.path;
 	FileProcesses.SaveExtensionJson();
-	vscode.commands.executeCommand('workbench.action.reloadWindow');
+	WorkspaceProcesses.ReloadWorkspace();
 }
 
 export async function QuickPickFromWorkspaceFolders(): Promise<{ name: string; path: string } | undefined> {
@@ -75,7 +76,7 @@ export async function QuickPickFromWorkspaceFolders(): Promise<{ name: string; p
 	return folders.find(folder => selectedFolder == `${folder.name} (${folder.path})`);
 }
 
-export async function AddClassToProject(baseFilePath: string, fileBaseName: string) {
+export async function AddClassToProject(baseFilePath: string, baseFileName: string) {
 	if (!WorkspaceProcesses.IsUserInWorkspace()) return;
 	let project = await QuickPickFromWorkspaceFolders();
 	if(!project) return;
@@ -87,11 +88,11 @@ export async function AddClassToProject(baseFilePath: string, fileBaseName: stri
 	if (CheckPath(path.join(project.path, "src", className + ".h"), "A class named " + className + " already exist!", false)) return;
 	if (CheckPath(path.join(project.path, "src", className + ".cpp"), "A class named " + className + " already exist!", false)) return;
 
-	fs.copyFileSync(path.join(baseFilePath, fileBaseName + ".h"), path.join(project.path, "src", className + ".h"));
-	fs.copyFileSync(path.join(baseFilePath, fileBaseName + ".cpp"), path.join(project.path, "src", className + ".cpp"));
-	FileProcesses.ReplaceText(path.join(project.path, "src", className + ".h"), fileBaseName, className);
-	FileProcesses.ReplaceText(path.join(project.path, "src", className + ".cpp"), fileBaseName, className);
-	FileProcesses.ReplaceText(path.join(project.path, "src", className + ".h"), fileBaseName.toUpperCase() + "_H_", className.toUpperCase() + "_H_");
+	fs.copyFileSync(path.join(baseFilePath, baseFileName + ".h"), path.join(project.path, "src", className + ".h"));
+	fs.copyFileSync(path.join(baseFilePath, baseFileName + ".cpp"), path.join(project.path, "src", className + ".cpp"));
+	FileProcesses.ReplaceText(path.join(project.path, "src", className + ".h"), baseFileName, className);
+	FileProcesses.ReplaceText(path.join(project.path, "src", className + ".cpp"), baseFileName, className);
+	FileProcesses.ReplaceText(path.join(project.path, "src", className + ".h"), baseFileName.toUpperCase() + "_H_", className.toUpperCase() + "_H_");
 	FileProcesses.AddFileToCMakeLists(path.join(project.path), className);
 
 	const filesToOpen = [

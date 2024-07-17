@@ -14,7 +14,7 @@ export const workspaceFilePath = path.join(currentDrive, "\\dev\\glist\\Glist.co
 export const glistpluginsPath = path.join(currentDrive, "\\dev\\glist\\glistplugins");
 export const glistPath = path.join(currentDrive, "\\dev\\glist");
 
-export const glistAppUrl = "https://codeload.github.com/javertus/GlistApp-vscode/zip/refs/heads/main";
+export const glistAppUrl = "https://github.com/javertus/GlistApp-vscode";
 export const glistPluginsUrl = "https://github.com/GlistPlugins/"
 export const pluginReposUrl = `https://api.github.com/orgs/GlistPlugins/repos`;
 export const glistEngineUrl = "https://github.com/GlistEngine/GlistEngine";

@@ -24,7 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 		await WorkspaceProcesses.UpdateWorkspace();
 	});
 	vscode.commands.registerCommand('glist-extension.add-canvas-to-project', async () => {
-		await ProjectProcesses.AddClassToProject(path.join(extensionPath, "GlistApp", "src"), "gCanvas");
+		await ProjectProcesses.AddClassToProject(path.join(extensionPath, "GlistApp-vscode", "src"), "gCanvas");
 	});
 	vscode.commands.registerCommand('glist-extension.add-class-to-project', async () => {
 		await ProjectProcesses.AddClassToProject(path.join(extensionPath), "EmptyClass");
@@ -59,11 +59,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 	extensionPath = context.extensionPath;
 	extensionDataFilePath = path.join(extensionPath, 'ExtensionData.json');
-	FirstRunWorker();
-	CheckUpdates();
+	OnExtensionStart();
 }
 
-async function FirstRunWorker() {
+async function OnExtensionStart() {
 	CheckJsonFile();
 	if (extensionJsonData.deleteFolder) {
 		await FileProcesses.DeleteFolder(extensionJsonData.deleteFolder);
@@ -71,28 +70,60 @@ async function FirstRunWorker() {
 		FileProcesses.SaveExtensionJson()
 		vscode.window.showInformationMessage("Project Deleted.");
 	}
-
+	if (extensionJsonData.installGlistEngine) {
+		await InstallEngine.InstallGlistEngine();
+	}
+	if (!fs.existsSync(path.join(extensionPath, "GlistApp-vscode", ".git"))) {
+		await CloneGlistAppTemplate();
+	}
 	if(WorkspaceProcesses.IsUserInWorkspace(false)) {
 		vscode.commands.executeCommand('setContext', 'glist-extension.showRunButton', true);
 		const folderWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(globals.glistPath, '**'));
-		folderWatcher.onDidDelete(e => {
+		folderWatcher.onDidCreate(e => {
+			if(path.dirname(e.fsPath).toLowerCase() + "\\" == globals.glistappsPath.toLowerCase() && fs.existsSync(path.join(e.fsPath, "CMakeLists.txt"))) {
+				WorkspaceProcesses.AddProjectToWorkspace(path.basename(e.fsPath));
+				if(!fs.existsSync(path.join(e.fsPath, 'src', 'gCanvas.h'))) return;
+				const filesToOpen = [
+					path.join(e.fsPath, 'src', 'gCanvas.h'),
+					path.join(e.fsPath, 'src', 'gCanvas.cpp')
+				];
+				ProjectProcesses.OpenFiles(filesToOpen)
+			}
 			WorkspaceProcesses.CloseNonExistentFileTabs();
+			WorkspaceProcesses.CheckLaunchConfigurations();
 		});
+
 		folderWatcher.onDidChange(e => {
 			WorkspaceProcesses.CloseNonExistentFileTabs();
+			WorkspaceProcesses.CheckLaunchConfigurations();
 		});
-		await WorkspaceProcesses.CloseNonExistentFileTabs();
-		WorkspaceProcesses.CheckLaunchConfigurations();
-	} 
 
-	if (extensionJsonData.installGlistEngine) {
-		extensionJsonData.installGlistEngine = false;
-		FileProcesses.SaveExtensionJson()
-		await InstallEngine.InstallGlistEngine();
-	}
-	if (!fs.existsSync(path.join(extensionPath, "GlistApp"))) {
-		await InstallGlistAppTemplate();
-	}
+		folderWatcher.onDidDelete(e => {
+			if(path.dirname(e.fsPath).toLowerCase() + "\\" == globals.glistappsPath.toLowerCase()) {
+				WorkspaceProcesses.RemoveProjectFromWorkspace(path.basename(e.fsPath));
+			}
+			WorkspaceProcesses.CloseNonExistentFileTabs();
+			WorkspaceProcesses.CheckLaunchConfigurations();
+		});
+
+		vscode.workspace.onDidChangeWorkspaceFolders(e => {
+			e.added.forEach(folder => {
+				if(!fs.existsSync(path.join(folder.uri.fsPath, 'src', 'gCanvas.h'))) return;
+				const filesToOpen = [
+					path.join(folder.uri.fsPath, 'src', 'gCanvas.h'),
+					path.join(folder.uri.fsPath, 'src', 'gCanvas.cpp')
+				];
+				ProjectProcesses.OpenFiles(filesToOpen)
+			});
+			WorkspaceProcesses.SortWorkspaceJson("");
+			WorkspaceProcesses.CloseNonExistentFileTabs();
+			WorkspaceProcesses.CheckLaunchConfigurations();
+		})
+
+		await WorkspaceProcesses.CloseNonExistentFileTabs();
+		await WorkspaceProcesses.CheckLaunchConfigurations();
+		await CheckUpdates();
+	} 
 	if (extensionJsonData.firstRun) {
 		await ConfigureExtension();
 	}
@@ -153,7 +184,6 @@ async function LoadTabs() {
 }
 
 async function CheckUpdates() {
-	if (!WorkspaceProcesses.IsUserInWorkspace(false)) return;
 	let engineUpdate = vscode.workspace.getConfiguration('glistengine').get<boolean>('autoUpdate.engine');
 	let pluginsUpdate = vscode.workspace.getConfiguration('glistengine').get<boolean>('autoUpdate.plugins');
 	let projectsUpdate = vscode.workspace.getConfiguration('glistengine').get<boolean>('autoUpdate.projects');
@@ -178,6 +208,7 @@ async function CheckUpdates() {
 			}
 		});
 	}
+	GitProcessses.UpdateRepository(path.join(extensionPath, "GlistApp-vscode"), true);
 }
 
 function ResetExtension() {
@@ -185,26 +216,21 @@ function ResetExtension() {
 	extensionJsonData.secondRun = true;
 	extensionJsonData.isGlistInstalled = false;
 	FileProcesses.SaveExtensionJson()
-	fs.rmSync(path.join(extensionPath, 'GlistApp'), { recursive: true, force: true });
-	vscode.commands.executeCommand('workbench.action.reloadWindow');
+	WorkspaceProcesses.ReloadWorkspace();
 }
 
 function CheckJsonFile() {
 	if (!fs.existsSync(extensionDataFilePath)) {
 		let initialData = { firstRun: true, secondRun: true, installGlistEngine: false, isGlistInstalled: false };
 		fs.writeFileSync(extensionDataFilePath, JSON.stringify(initialData, null, 2));
-
 	}
 	let data = fs.readFileSync(extensionDataFilePath, 'utf8');
 	extensionJsonData = JSON.parse(data);
 }
 
-async function InstallGlistAppTemplate() {
-	const zipFilePath = path.join(extensionPath, "GlistApp.zip");
-	await FileProcesses.DownloadFile(globals.glistAppUrl, zipFilePath, "");
-	FileProcesses.ExtractArchive(zipFilePath, extensionPath, "");
-	await fs.rename(path.join(extensionPath, 'GlistApp-vscode-main'), path.join(extensionPath, 'GlistApp'));
-	await fs.remove(zipFilePath);
+async function CloneGlistAppTemplate() {
+	fs.rmSync(path.join(extensionPath, 'GlistApp-vscode'), { recursive: true, force: true });
+	await GitProcessses.CloneRepository(globals.glistAppUrl, extensionPath, false, "Cloning GlistApp Template");
 }
 
 export function deactivate() { }

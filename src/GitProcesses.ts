@@ -41,13 +41,18 @@ async function InstallGit() {
         vscode.window.showErrorMessage("You can't run this action before Git is installed!");
         return;
     }
-    installation = true;
-    fs.ensureDirSync(globals.tempPath);
-    const zipFilePath = path.join(globals.tempPath, 'git.zip');
-    await FileProcesses.DownloadFile(globals.gitUrl, zipFilePath, "Downloading Git");
-    fs.ensureDir(path.join(extension.extensionPath, "git"));
-    FileProcesses.ExtractArchive(zipFilePath, path.join(extension.extensionPath, "git"), "Git Installed.");
-    installation = false;
+    try {
+        installation = true;
+        fs.ensureDirSync(globals.tempPath);
+        const zipFilePath = path.join(globals.tempPath, 'git.zip');
+        await FileProcesses.DownloadFile(globals.gitUrl, zipFilePath, "Downloading Git");
+        fs.ensureDir(path.join(extension.extensionPath, "git"));
+        FileProcesses.ExtractArchive(zipFilePath, path.join(extension.extensionPath, "git"), "Git Installed.");
+        installation = false;
+    }
+    catch (err) {
+        vscode.window.showErrorMessage(`Failed to install Git! ${err}`);
+    }
 }
 
 export async function CheckRepoUpdates() {
@@ -66,7 +71,7 @@ export async function CheckRepoUpdates() {
             folders.push({ name: path.basename(folder), path: folder });
         }
     });
-    let selection = await vscode.window.showQuickPick(folders.map(folder => folder.name + ((folder.path) ? ` (${folder.path})` : "")), { title: "Select the repo you want to check updates" });
+    let selection = await vscode.window.showQuickPick(folders.map(folder => folder.name + ((folder.path) ? ` (${folder.path})` : "")), { title: "Select the repo you want to update" });
     if (selection == folders[0].name) {
         for (let i = 1; i < folders.length; i++) {
             await UpdateRepository(folders[i].path);
@@ -103,7 +108,6 @@ async function FetchRepository(repoPath: string, silentMode: boolean = false) {
                     });
                     lastIncrementVal = parseFloat(progressMatch[1]);
                 }
-
             });
 
             gitProcess.on('close', (code) => {
@@ -198,7 +202,7 @@ export async function ClonePlugin() {
         const repoNames = response.data.map(repo => repo.name);
         selection = await vscode.window.showQuickPick(repoNames, { title: "Select the plugin you want to clone" });
         if (!selection) return;
-        await CloneRepository(globals.glistPluginsUrl + selection, globals.glistpluginsPath, selection);
+        await CloneRepository(globals.glistPluginsUrl + selection, globals.glistpluginsPath);
     } catch (error) {
         if (error === "User Cancelled") {
             if (!selection) return;
@@ -221,7 +225,7 @@ export async function ClonePluginUrl() {
     input = input + "";
     let repoName = GetRepoNameFromUrl(input);
     try {
-        await CloneRepository(input, globals.glistpluginsPath, repoName);
+        await CloneRepository(input, globals.glistpluginsPath);
     }
     catch (err) {
         if (err === "User Cancelled") {
@@ -234,14 +238,15 @@ export async function ClonePluginUrl() {
     }
 }
 
-export async function CloneRepository(url: string, clonePath: string, repoName: string, cancellable = true) {
+export async function CloneRepository(url: string, clonePath: string, cancellable = true, title: string = 'Cloning Repository') {
     if (!(await CheckGitInstallation())) return;
     await vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
-        title: 'Cloning Repository',
+        title: title,
         cancellable: cancellable
     }, async (progress, token) => {
         return new Promise<void>((resolve, reject) => {
+            const repoName = GetRepoNameFromUrl(url);
             let gitProcess = child_process.spawn('git', ['clone', '--progress', url, path.join(clonePath, repoName)]);
             let lastIncrementVal = 0;
 
@@ -285,8 +290,8 @@ export async function CloneProject() {
     input = input + "";
     let repoName = GetRepoNameFromUrl(input);
     try {
-        await CloneRepository(input, globals.glistappsPath, repoName)
-        await WorkspaceProcesses.AddNewProjectToWorkspace(repoName);
+        await CloneRepository(input, globals.glistappsPath)
+        await WorkspaceProcesses.AddProjectToWorkspace(repoName);
         const filesToOpen = [
             path.join(globals.glistappsPath, repoName, 'src', 'gCanvas.h'),
             path.join(globals.glistappsPath, repoName, 'src', 'gCanvas.cpp')

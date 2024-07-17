@@ -15,13 +15,14 @@ This extension is made for [Glist Engine](https://github.com/GlistEngine/GlistEn
 - Clones plugin from given URL<br>
 - Switches into Glist workspace<br>
 - Adds all Glist projects into your workspace<br>
+- Adds the project to workspace when a project copied into myglistapps folder<br>
 - Creates new canvas or empty class to given project<br>
 - Deletes Project<br>
 - Deletes class from Project<br>
 - Closes non-existent file tabs<br>
 - Creates launch configurations if don't exist<br>
 - Run button<br>
-- Debugging
+- Debugger
 
 # Known Issues
 

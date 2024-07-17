@@ -5,6 +5,7 @@ src/**
 .yarnrc
 .ExtensonData.json
 GlistApp/**
+GlistApp-vscode/**
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/.eslintrc.json
