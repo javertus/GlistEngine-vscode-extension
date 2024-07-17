@@ -4,7 +4,7 @@
 
 ## New
 
-- Some bug fixes
+- Some bug fixes and code changes
 - Engine folder isn't removable from workspace anymore
 - Adds projects to workspace by copying into myglistapps folder
 
