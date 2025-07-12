@@ -182,7 +182,7 @@ async function DownloadFile(url, dest, message) {
 }
 exports.DownloadFile = DownloadFile;
 function SaveExtensionJson() {
-    fs.writeFileSync(extension.extensionDataFilePath, JSON.stringify(extension.extensionJsonData, null, 2));
+    fs.writeFileSync(extension.dataFilePath, JSON.stringify(extension.jsonData, null, 2));
 }
 exports.SaveExtensionJson = SaveExtensionJson;
 function ExtractArchive(zipPath, dest, message) {

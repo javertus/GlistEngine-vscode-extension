@@ -46,7 +46,7 @@ async function CreateNewProject(projectName = undefined) {
         return;
     projectName = projectName + "";
     if (!CheckPath(path.join(globals.glistappsPath, projectName), "A project named " + projectName + " already exist. Opening already existing project...", false)) {
-        fs.cpSync(path.join(extension.extensionPath, 'GlistApp-vscode'), path.join(globals.glistappsPath, projectName), { recursive: true });
+        fs.cpSync(path.join(extension.path, 'GlistApp-vscode'), path.join(globals.glistappsPath, projectName), { recursive: true });
         fs.rmSync(path.join(globals.glistappsPath, projectName, ".git"), { recursive: true, force: true });
         vscode.window.showInformationMessage('Created new Project.');
     }
@@ -83,7 +83,7 @@ async function DeleteProject() {
     }
     WorkspaceProcesses.RemoveProjectFromWorkspace(project.name);
     FileProcesses.DeleteFolder(project.path);
-    extension.extensionJsonData.deleteFolder = project.path;
+    extension.jsonData.deleteFolder = project.path;
     FileProcesses.SaveExtensionJson();
     WorkspaceProcesses.ReloadWorkspace();
 }

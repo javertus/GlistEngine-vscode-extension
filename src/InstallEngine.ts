@@ -14,10 +14,10 @@ export async function InstallGlistEngine() {
 		vscode.window.showErrorMessage("You can't run this action while installing is in process!");
 		return;
 	}
-	extension.extensionJsonData.installGlistEngine = true;
+	extension.jsonData.installGlistEngine = true;
 	FileProcesses.SaveExtensionJson();
 	if (await FileProcesses.UpdateVSCodeSettings()) return;
-	extension.extensionJsonData.installGlistEngine = false;
+	extension.jsonData.installGlistEngine = false;
 	FileProcesses.SaveExtensionJson();
 
 	const result = await vscode.window.showInformationMessage(

@@ -21,9 +21,9 @@ export async function UpdateWorkspace(forceCreate: boolean = false) {
 	if (!IsUserInWorkspace(!forceCreate) && !forceCreate) return;
 	try {
 		// If glist was not found before but now exists
-		if (fs.existsSync(globals.glistappsPath) && !extension.extensionJsonData.isGlistInstalled) {
-			extension.extensionJsonData.firstRun = true;
-			extension.extensionJsonData.secondRun = true;
+		if (fs.existsSync(globals.glistappsPath) && !extension.jsonData.isGlistInstalled) {
+			extension.jsonData.firstRun = true;
+			extension.jsonData.secondRun = true;
 			FileProcesses.SaveExtensionJson();
 			extension.ConfigureExtension();
 			return;
@@ -53,9 +53,9 @@ export async function UpdateWorkspace(forceCreate: boolean = false) {
 export async function AddProjectToWorkspace(projectName: string, forceCreate: boolean = false) {
 	CheckLaunchConfigurations();
 	if (!fs.existsSync(globals.workspaceFilePath) || forceCreate) {
-		extension.extensionJsonData.firstRun = false;
-		extension.extensionJsonData.secondRun = true;
-		extension.extensionJsonData.isGlistInstalled = true;
+		extension.jsonData.firstRun = false;
+		extension.jsonData.secondRun = true;
+		extension.jsonData.isGlistInstalled = true;
 		FileProcesses.SaveExtensionJson()
 		await UpdateWorkspace(true);
 		return;
@@ -139,7 +139,7 @@ export async function CheckLaunchConfigurations() {
 		if (fs.existsSync(path.join(folder, "CMakeLists.txt"))) {
 			if (!fs.existsSync(path.join(folder, ".vscode"))) {
 				vscode.window.showInformationMessage("Creating launch configurations for " + path.basename(folder));
-				fs.cpSync(path.join(extension.extensionPath, 'GlistApp-vscode', '.vscode'), path.join(folder, '.vscode'), { recursive: true });
+				fs.cpSync(path.join(extension.path, 'GlistApp-vscode', '.vscode'), path.join(folder, '.vscode'), { recursive: true });
 			}
 		}
 	});
