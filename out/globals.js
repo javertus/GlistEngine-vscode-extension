@@ -62,7 +62,7 @@ exports.vscodeSettings = {
         "${workspaceFolder}/../../zbin/glistzbin-win64/clang64/include/**"
     ],
     "terminal.integrated.env.windows": {
-        "Path": "${env:PATH};" + exports.glistPath.split(path.sep).join("/") + "/zbin/glistzbin-win64/CMake/bin"
+        "Path": "${env:PATH};" + exports.glistPath.split(path.sep).join("/") + "/zbin/glistzbin-win64/CMake/bin;" + exports.glistPath.split(path.sep).join("/") + "/zbin/glistzbin-win64/clang64/bin"
     }
 };
 exports.vscodeSettingsPath = path.join(process.env.HOME || process.env.USERPROFILE || '', 'AppData/Roaming/Code/User/settings.json' // This path might differ based on OS and VS Code distribution

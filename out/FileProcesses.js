@@ -50,7 +50,7 @@ async function UpdateVSCodeSettings() {
             WorkspaceProcesses.ReloadWorkspace();
             return true;
         }
-        let isChanged = false;
+        let isReloadRequired = false;
         // Add or update settings
         for (const [key, value] of Object.entries(globals.vscodeSettings)) {
             if (Array.isArray(value)) {
@@ -58,7 +58,6 @@ async function UpdateVSCodeSettings() {
                 const updatedArray = ArraysUnion(currentArray, value);
                 if (currentArray.length !== updatedArray.length) {
                     settings[key] = updatedArray;
-                    isChanged = true;
                 }
             }
             else if (typeof value === 'object' && value !== null) {
@@ -67,22 +66,22 @@ async function UpdateVSCodeSettings() {
                 for (const [subKey, subValue] of Object.entries(value)) {
                     if (!settings[key][subKey] || !settings[key][subKey].includes(subValue)) {
                         settings[key][subKey] = settings[key][subKey] ? settings[key][subKey] + ';' + subValue : subValue;
-                        isChanged = true;
                     }
                 }
             }
             else {
                 if (settings[key] !== value) {
                     settings[key] = value;
-                    isChanged = true;
+                    if (key == "security.workspace.trust.enabled")
+                        isReloadRequired = true;
                 }
             }
         }
-        if (isChanged) {
-            fs.writeFileSync(globals.vscodeSettingsPath, JSON.stringify(settings, null, 2));
+        fs.writeFileSync(globals.vscodeSettingsPath, JSON.stringify(settings, null, 2));
+        if (isReloadRequired) {
             WorkspaceProcesses.ReloadWorkspace();
         }
-        return isChanged;
+        return isReloadRequired;
     }
     catch (err) {
         console.error('Error while updating VS Code settings:', err);

@@ -99,7 +99,7 @@ async function QuickPickFromWorkspaceFolders() {
         }
     });
     const selectedFolder = await vscode.window.showQuickPick(folders.map(folder => `${folder.name} (${folder.path})`), {
-        placeHolder: 'Select the name of project you want to create new class'
+        placeHolder: 'Select the project'
     });
     if (CheckInput(selectedFolder))
         return;
@@ -136,9 +136,10 @@ async function AddClassToProject(baseFilePath, baseFileName) {
 }
 exports.AddClassToProject = AddClassToProject;
 function GetSubFiles(directory) {
-    return fs.readdirSync(directory)
-        .filter(file => fs.statSync(path.join(directory, file)).isFile())
-        .map(folder => path.join(directory, folder));
+    return fs.readdirSync(directory).flatMap(file => {
+        const fullPath = path.join(directory, file);
+        return fs.statSync(fullPath).isDirectory() ? GetSubFiles(fullPath) : fullPath;
+    });
 }
 function GetBaseNameWithoutExtension(filePath) {
     const baseName = path.basename(filePath);
@@ -157,7 +158,7 @@ async function DeleteClassFromProject() {
             fileList.push(GetBaseNameWithoutExtension(file));
         }
     });
-    let className = await vscode.window.showQuickPick(fileList);
+    let className = await vscode.window.showQuickPick(fileList, { title: "Select the class you want to delete." });
     if (CheckInput(className))
         return;
     className = className + "";

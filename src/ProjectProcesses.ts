@@ -25,7 +25,7 @@ export async function CreateNewProject(projectName: any = undefined) {
 	}
 
 	await WorkspaceProcesses.AddProjectToWorkspace(projectName, forceCreate);
-	if(forceCreate) return;
+	if (forceCreate) return;
 	const filesToOpen = [
 		path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.h'),
 		path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.cpp')
@@ -62,15 +62,15 @@ export async function DeleteProject() {
 
 export async function QuickPickFromWorkspaceFolders(): Promise<{ name: string; path: string } | undefined> {
 	const workspaceFolders = vscode.workspace.workspaceFolders;
-	if(CheckInput(workspaceFolders)) return;
+	if (CheckInput(workspaceFolders)) return;
 	let folders: Array<any> = [];
 	workspaceFolders?.forEach(folder => {
-		if(!(folder.uri.fsPath.toLowerCase() == globals.glistEnginePath.toLowerCase())) {
+		if (!(folder.uri.fsPath.toLowerCase() == globals.glistEnginePath.toLowerCase())) {
 			folders.push({ name: folder.name, path: folder.uri.fsPath })
 		}
 	});
 	const selectedFolder = await vscode.window.showQuickPick(folders.map(folder => `${folder.name} (${folder.path})`), {
-		placeHolder: 'Select the name of project you want to create new class'
+		placeHolder: 'Select the project'
 	});
 	if (CheckInput(selectedFolder)) return;
 	return folders.find(folder => selectedFolder == `${folder.name} (${folder.path})`);
@@ -79,7 +79,7 @@ export async function QuickPickFromWorkspaceFolders(): Promise<{ name: string; p
 export async function AddClassToProject(baseFilePath: string, baseFileName: string) {
 	if (!WorkspaceProcesses.IsUserInWorkspace()) return;
 	let project = await QuickPickFromWorkspaceFolders();
-	if(!project) return;
+	if (!project) return;
 	let className = await vscode.window.showInputBox({
 		placeHolder: "Enter the name of file you want to create"
 	});
@@ -102,30 +102,31 @@ export async function AddClassToProject(baseFilePath: string, baseFileName: stri
 	await OpenFiles(filesToOpen);
 }
 
-function GetSubFiles(directory: string) {
-	return fs.readdirSync(directory)
-	.filter(file => fs.statSync(path.join(directory, file)).isFile())
-	.map(folder => path.join(directory, folder));
+function GetSubFiles(directory: string): string[] {
+	return fs.readdirSync(directory).flatMap(file => {
+		const fullPath = path.join(directory, file);
+		return fs.statSync(fullPath).isDirectory() ? GetSubFiles(fullPath) : fullPath;
+	});
 }
 
 function GetBaseNameWithoutExtension(filePath: string): string {
-    const baseName = path.basename(filePath);
-    const extension = path.extname(baseName); 
-    return baseName.slice(0, -extension.length); 
+	const baseName = path.basename(filePath);
+	const extension = path.extname(baseName);
+	return baseName.slice(0, -extension.length);
 }
 
 export async function DeleteClassFromProject() {
 	if (!WorkspaceProcesses.IsUserInWorkspace()) return;
 
 	let project = await QuickPickFromWorkspaceFolders();
-	if(!project) return;
+	if (!project) return;
 	let fileList: string[] = [];
 	GetSubFiles(path.join(project.path, "src")).forEach(file => {
-		if(!fileList.includes(GetBaseNameWithoutExtension(file)) && GetBaseNameWithoutExtension(file) != "main") {
+		if (!fileList.includes(GetBaseNameWithoutExtension(file)) && GetBaseNameWithoutExtension(file) != "main") {
 			fileList.push(GetBaseNameWithoutExtension(file));
 		}
 	});
-	let className = await vscode.window.showQuickPick(fileList);
+	let className = await vscode.window.showQuickPick(fileList, { title: "Select the class you want to delete." });
 	if (CheckInput(className)) return;
 	className = className + "";
 	if (CheckPath(path.join(project.path, "src", className + ".h"), "A class named " + className + " does not exist!")) return;

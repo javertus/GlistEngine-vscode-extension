@@ -46,6 +46,7 @@ async function UpdateWorkspace(forceCreate = false) {
     if (!IsUserInWorkspace(!forceCreate) && !forceCreate)
         return;
     try {
+        // If glist was not found before but now exists
         if (fs.existsSync(globals.glistappsPath) && !extension.extensionJsonData.isGlistInstalled) {
             extension.extensionJsonData.firstRun = true;
             extension.extensionJsonData.secondRun = true;

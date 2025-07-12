@@ -73,16 +73,13 @@ async function OnExtensionStart() {
 	if (extensionJsonData.installGlistEngine) {
 		await InstallEngine.InstallGlistEngine();
 	}
-	if (!fs.existsSync(path.join(extensionPath, "GlistApp-vscode", ".git"))) {
-		await CloneGlistAppTemplate();
-	}
-	if(WorkspaceProcesses.IsUserInWorkspace(false)) {
+	if (WorkspaceProcesses.IsUserInWorkspace(false)) {
 		vscode.commands.executeCommand('setContext', 'glist-extension.showRunButton', true);
 		const folderWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(globals.glistPath, '**'));
 		folderWatcher.onDidCreate(e => {
-			if(path.dirname(e.fsPath).toLowerCase() + "\\" == globals.glistappsPath.toLowerCase() && fs.existsSync(path.join(e.fsPath, "CMakeLists.txt"))) {
+			if (path.dirname(e.fsPath).toLowerCase() + "\\" == globals.glistappsPath.toLowerCase() && fs.existsSync(path.join(e.fsPath, "CMakeLists.txt"))) {
 				WorkspaceProcesses.AddProjectToWorkspace(path.basename(e.fsPath));
-				if(!fs.existsSync(path.join(e.fsPath, 'src', 'gCanvas.h'))) return;
+				if (!fs.existsSync(path.join(e.fsPath, 'src', 'gCanvas.h'))) return;
 				const filesToOpen = [
 					path.join(e.fsPath, 'src', 'gCanvas.h'),
 					path.join(e.fsPath, 'src', 'gCanvas.cpp')
@@ -99,7 +96,7 @@ async function OnExtensionStart() {
 		});
 
 		folderWatcher.onDidDelete(e => {
-			if(path.dirname(e.fsPath).toLowerCase() + "\\" == globals.glistappsPath.toLowerCase()) {
+			if (path.dirname(e.fsPath).toLowerCase() + "\\" == globals.glistappsPath.toLowerCase()) {
 				WorkspaceProcesses.RemoveProjectFromWorkspace(path.basename(e.fsPath));
 			}
 			WorkspaceProcesses.CloseNonExistentFileTabs();
@@ -108,7 +105,7 @@ async function OnExtensionStart() {
 
 		vscode.workspace.onDidChangeWorkspaceFolders(e => {
 			e.added.forEach(folder => {
-				if(!fs.existsSync(path.join(folder.uri.fsPath, 'src', 'gCanvas.h'))) return;
+				if (!fs.existsSync(path.join(folder.uri.fsPath, 'src', 'gCanvas.h'))) return;
 				const filesToOpen = [
 					path.join(folder.uri.fsPath, 'src', 'gCanvas.h'),
 					path.join(folder.uri.fsPath, 'src', 'gCanvas.cpp')
@@ -118,12 +115,12 @@ async function OnExtensionStart() {
 			WorkspaceProcesses.SortWorkspaceJson("");
 			WorkspaceProcesses.CloseNonExistentFileTabs();
 			WorkspaceProcesses.CheckLaunchConfigurations();
-		})
+		});
 
 		await WorkspaceProcesses.CloseNonExistentFileTabs();
 		await WorkspaceProcesses.CheckLaunchConfigurations();
 		await CheckUpdates();
-	} 
+	}
 	if (extensionJsonData.firstRun) {
 		await ConfigureExtension();
 	}
@@ -141,9 +138,11 @@ export async function ConfigureExtension() {
 			FileProcesses.SaveExtensionJson()
 			return;
 		}
-
+		// Clone GlistApp template if does not exist
+		if (!fs.existsSync(path.join(extensionPath, "GlistApp-vscode", ".git"))) {
+			await CloneGlistAppTemplate();
+		}
 		// Install ninja if does not exist
-		fs.ensureDirSync(path.join(globals.glistZbinPath, "CMake"));
 		if (!fs.existsSync(path.join(globals.glistZbinPath, "CMake", "bin", "ninja.exe"))) {
 			const ninjaPath = path.join(globals.glistZbinPath, "CMake", "bin", "ninja.zip");
 			await FileProcesses.DownloadFile(globals.ninjaUrl, ninjaPath, "Downloading Ninja");
@@ -151,14 +150,14 @@ export async function ConfigureExtension() {
 			fs.removeSync(ninjaPath);
 		}
 
-		if(await FileProcesses.UpdateVSCodeSettings()) return;
+		if (await FileProcesses.UpdateVSCodeSettings()) return;
 
 		extensionJsonData.firstRun = false;
 		extensionJsonData.isGlistInstalled = true;
 		FileProcesses.SaveExtensionJson()
 		// Opens the new workspace. Setup cannot continue after here because vscode restarts. For resuming setup, there is a secondary setup run.
 		await WorkspaceProcesses.UpdateWorkspace(true);
-		// If workspace was already opened before, vscode will not restart so setup can continue.
+		// If workspace was already opened vscode will not restart so setup can continue.
 		if (WorkspaceProcesses.IsUserInWorkspace(false)) await LoadTabs();
 	}
 	catch (error) {
@@ -170,7 +169,7 @@ export async function ConfigureExtension() {
 
 async function LoadTabs() {
 	// Close all active tabs
-	vscode.commands.executeCommand('workbench.action.closeAllEditors');
+	await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
 	const filesToOpen = [
 		path.join(globals.glistappsPath, 'GlistApp', 'src', 'gCanvas.h'),
@@ -184,15 +183,15 @@ async function LoadTabs() {
 }
 
 async function CheckUpdates() {
-	let engineUpdate = vscode.workspace.getConfiguration('glistengine').get<boolean>('autoUpdate.engine');
-	let pluginsUpdate = vscode.workspace.getConfiguration('glistengine').get<boolean>('autoUpdate.plugins');
-	let projectsUpdate = vscode.workspace.getConfiguration('glistengine').get<boolean>('autoUpdate.projects');
-	
-	if(engineUpdate) {
+	const engineUpdate = vscode.workspace.getConfiguration('glistengine').get<boolean>('autoUpdate.engine');
+	const pluginsUpdate = vscode.workspace.getConfiguration('glistengine').get<boolean>('autoUpdate.plugins');
+	const projectsUpdate = vscode.workspace.getConfiguration('glistengine').get<boolean>('autoUpdate.projects');
+
+	if (engineUpdate) {
 		if (!(await GitProcessses.CheckGitInstallation())) return;
 		GitProcessses.UpdateRepository(path.join(globals.glistPath, "GlistEngine"), true);
 	}
-	if(pluginsUpdate) {
+	if (pluginsUpdate) {
 		if (!(await GitProcessses.CheckGitInstallation())) return;
 		FileProcesses.GetSubfolders(globals.glistpluginsPath).map(folder => {
 			if (fs.existsSync(path.join(folder, ".git"))) {
@@ -200,7 +199,7 @@ async function CheckUpdates() {
 			}
 		});
 	}
-	if(projectsUpdate) {
+	if (projectsUpdate) {
 		if (!(await GitProcessses.CheckGitInstallation())) return;
 		FileProcesses.GetSubfolders(globals.glistappsPath).map(folder => {
 			if (fs.existsSync(path.join(folder, ".git"))) {
@@ -229,8 +228,13 @@ function CheckJsonFile() {
 }
 
 async function CloneGlistAppTemplate() {
-	fs.rmSync(path.join(extensionPath, 'GlistApp-vscode'), { recursive: true, force: true });
-	await GitProcessses.CloneRepository(globals.glistAppUrl, extensionPath, false, "Cloning GlistApp Template");
+	try {
+		fs.rmSync(path.join(extensionPath, 'GlistApp-vscode'), { recursive: true, force: true });
+		await GitProcessses.CloneRepository(globals.glistAppUrl, extensionPath, false, "Cloning GlistApp Template");
+	}
+	catch (err) {
+		console.log(`An error occurred while cloning GlistApp Template: ${err}`)
+	}
 }
 
 export function deactivate() { }

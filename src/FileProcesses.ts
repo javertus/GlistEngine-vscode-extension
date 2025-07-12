@@ -24,7 +24,7 @@ export async function UpdateVSCodeSettings(): Promise<boolean> {
 			return true;
 		}
 
-		let isChanged = false;
+		let isReloadRequired = false;
 
 		// Add or update settings
 		for (const [key, value] of Object.entries(globals.vscodeSettings)) {
@@ -33,7 +33,6 @@ export async function UpdateVSCodeSettings(): Promise<boolean> {
 				const updatedArray = ArraysUnion(currentArray, value);
 				if (currentArray.length !== updatedArray.length) {
 					settings[key] = updatedArray;
-					isChanged = true;
 				}
 			} else if (typeof value === 'object' && value !== null) {
 				// Check for nested objects (e.g., terminal.integrated.env.windows)
@@ -41,21 +40,20 @@ export async function UpdateVSCodeSettings(): Promise<boolean> {
 				for (const [subKey, subValue] of Object.entries(value)) {
 					if (!settings[key][subKey] || !settings[key][subKey].includes(subValue)) {
 						settings[key][subKey] = settings[key][subKey] ? settings[key][subKey] + ';' + subValue : subValue;
-						isChanged = true;
 					}
 				}
 			} else {
 				if (settings[key] !== value) {
 					settings[key] = value;
-					isChanged = true;
+					if (key == "security.workspace.trust.enabled") isReloadRequired = true;
 				}
 			}
 		}
-		if (isChanged) {
-			fs.writeFileSync(globals.vscodeSettingsPath, JSON.stringify(settings, null, 2));
+		fs.writeFileSync(globals.vscodeSettingsPath, JSON.stringify(settings, null, 2));
+		if (isReloadRequired) {
 			WorkspaceProcesses.ReloadWorkspace();
 		}
-		return isChanged;
+		return isReloadRequired;
 	} catch (err) {
 		console.error('Error while updating VS Code settings:', err);
 		return true;
@@ -192,41 +190,41 @@ function ArraysUnion(a: any[], b: any[]) {
 }
 
 function GetDisks(): string[] {
-    let disks: string[] = [];
-    const result = execSync('wmic logicaldisk get name').toString();
-    disks = result.split('\n').map(line => line.trim()).filter(line => line && line !== 'Name');
-    return disks;
+	let disks: string[] = [];
+	const result = execSync('wmic logicaldisk get name').toString();
+	disks = result.split('\n').map(line => line.trim()).filter(line => line && line !== 'Name');
+	return disks;
 }
 
 function CheckDirectoryOnDisks(dirName: string): string[] {
-    const disks = GetDisks();
-    const foundDisks: string[] = [];
+	const disks = GetDisks();
+	const foundDisks: string[] = [];
 
-    disks.forEach(disk => {
-        const fullPath = path.join(disk, dirName);
-        if (fs.existsSync(fullPath)) {
-            foundDisks.push(disk);
-        }
-    });
+	disks.forEach(disk => {
+		const fullPath = path.join(disk, dirName);
+		if (fs.existsSync(fullPath)) {
+			foundDisks.push(disk);
+		}
+	});
 
-    return foundDisks;
+	return foundDisks;
 }
 
 export function GetGlistDrive() {
-    const foundDisks = CheckDirectoryOnDisks('dev\\glist');
-    let disk = vscode.workspace.getConfiguration('glistengine').get<string>('glist.disk');
-    if (disk) return disk;
-    if (foundDisks.length == 0) {
-        vscode.window.showWarningMessage(`Glist Engine not found in any disks! Setting glist disk as: ${GetDisks()[0]} You can change the disk from Visual Studio Code settings.`)
-        vscode.workspace.getConfiguration('glistengine').update("glist.disk", GetDisks()[0], 1);
-        return GetDisks()[0];
-    } 
-    else if (foundDisks.length == 1) {
-        return foundDisks[0];
-    }
-    else {
-        vscode.window.showWarningMessage(`More than one glist installations are found! Setting current glist disk as: ${foundDisks[0]} You can change the disk from Visual Studio Code settings.`)
-        vscode.workspace.getConfiguration('glistengine').update("glist.disk", foundDisks[0], 1);
-        return foundDisks[0];
-    }
+	const foundDisks = CheckDirectoryOnDisks('dev\\glist');
+	let disk = vscode.workspace.getConfiguration('glistengine').get<string>('glist.disk');
+	if (disk) return disk;
+	if (foundDisks.length == 0) {
+		vscode.window.showWarningMessage(`Glist Engine not found in any disks! Setting glist disk as: ${GetDisks()[0]} You can change the disk from Visual Studio Code settings.`)
+		vscode.workspace.getConfiguration('glistengine').update("glist.disk", GetDisks()[0], 1);
+		return GetDisks()[0];
+	}
+	else if (foundDisks.length == 1) {
+		return foundDisks[0];
+	}
+	else {
+		vscode.window.showWarningMessage(`More than one glist installations are found! Setting current glist disk as: ${foundDisks[0]} You can change the disk from Visual Studio Code settings.`)
+		vscode.workspace.getConfiguration('glistengine').update("glist.disk", foundDisks[0], 1);
+		return foundDisks[0];
+	}
 }

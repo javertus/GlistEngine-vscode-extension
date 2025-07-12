@@ -38,11 +38,13 @@ async function InstallGlistEngine() {
         vscode.window.showErrorMessage("You can't run this action while installing is in process!");
         return;
     }
+    extension.extensionJsonData.installGlistEngine = true;
+    FileProcesses.SaveExtensionJson();
     if (await FileProcesses.UpdateVSCodeSettings())
         return;
     extension.extensionJsonData.installGlistEngine = false;
     FileProcesses.SaveExtensionJson();
-    const result = await vscode.window.showInformationMessage('This action will install the Glist Engine and its dependencies. Current Glist Engine installation in /glist folder will be modified if exist. Your projects and plugins will not affected. Do you want to continue?', { modal: true }, 'Yes', 'No');
+    const result = await vscode.window.showInformationMessage('This action will install the Glist Engine and its dependencies. Current Glist Engine installation in /glist folder will be modified if exist. Your projects and plugins will not be affected. Do you want to continue?', { modal: true }, 'Yes', 'No');
     if (result == 'Yes') {
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,

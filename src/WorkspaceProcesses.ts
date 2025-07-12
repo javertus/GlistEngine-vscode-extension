@@ -20,6 +20,7 @@ export function IsUserInWorkspace(showErrorMessage: boolean = true) {
 export async function UpdateWorkspace(forceCreate: boolean = false) {
 	if (!IsUserInWorkspace(!forceCreate) && !forceCreate) return;
 	try {
+		// If glist was not found before but now exists
 		if (fs.existsSync(globals.glistappsPath) && !extension.extensionJsonData.isGlistInstalled) {
 			extension.extensionJsonData.firstRun = true;
 			extension.extensionJsonData.secondRun = true;
@@ -67,12 +68,12 @@ export async function AddProjectToWorkspace(projectName: string, forceCreate: bo
 export function SortWorkspaceJson(projectName: string) {
 	const jsonString = fs.readFileSync(globals.workspaceFilePath, 'utf-8');
 	const jsonData = JSON.parse(jsonString);
-	const enginePath = {path: globals.glistEnginePath};
+	const enginePath = { path: globals.glistEnginePath };
 
 	jsonData.folders = jsonData.folders.filter((folder: { path: string }) => !folder.path.includes(globals.glistEnginePath));
 
 	// Add the new path and sort the folders array alphabetically by path
-	if(projectName) jsonData.folders.push({ path: path.join(globals.glistappsPath, projectName) });
+	if (projectName) jsonData.folders.push({ path: path.join(globals.glistappsPath, projectName) });
 	jsonData.folders.sort((a: { path: string }, b: { path: string }) => path.basename(a.path).localeCompare(path.basename(b.path)));
 
 	// Re-add the engine path

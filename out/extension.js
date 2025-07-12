@@ -92,9 +92,6 @@ async function OnExtensionStart() {
     if (exports.extensionJsonData.installGlistEngine) {
         await InstallEngine.InstallGlistEngine();
     }
-    if (!fs.existsSync(path.join(exports.extensionPath, "GlistApp-vscode", ".git"))) {
-        await CloneGlistAppTemplate();
-    }
     if (WorkspaceProcesses.IsUserInWorkspace(false)) {
         vscode.commands.executeCommand('setContext', 'glist-extension.showRunButton', true);
         const folderWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(globals.glistPath, '**'));
@@ -157,8 +154,11 @@ async function ConfigureExtension() {
             FileProcesses.SaveExtensionJson();
             return;
         }
+        // Clone GlistApp template if does not exist
+        if (!fs.existsSync(path.join(exports.extensionPath, "GlistApp-vscode", ".git"))) {
+            await CloneGlistAppTemplate();
+        }
         // Install ninja if does not exist
-        fs.ensureDirSync(path.join(globals.glistZbinPath, "CMake"));
         if (!fs.existsSync(path.join(globals.glistZbinPath, "CMake", "bin", "ninja.exe"))) {
             const ninjaPath = path.join(globals.glistZbinPath, "CMake", "bin", "ninja.zip");
             await FileProcesses.DownloadFile(globals.ninjaUrl, ninjaPath, "Downloading Ninja");
@@ -172,7 +172,7 @@ async function ConfigureExtension() {
         FileProcesses.SaveExtensionJson();
         // Opens the new workspace. Setup cannot continue after here because vscode restarts. For resuming setup, there is a secondary setup run.
         await WorkspaceProcesses.UpdateWorkspace(true);
-        // If workspace was already opened before, vscode will not restart so setup can continue.
+        // If workspace was already opened vscode will not restart so setup can continue.
         if (WorkspaceProcesses.IsUserInWorkspace(false))
             await LoadTabs();
     }
@@ -184,7 +184,7 @@ async function ConfigureExtension() {
 exports.ConfigureExtension = ConfigureExtension;
 async function LoadTabs() {
     // Close all active tabs
-    vscode.commands.executeCommand('workbench.action.closeAllEditors');
+    await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     const filesToOpen = [
         path.join(globals.glistappsPath, 'GlistApp', 'src', 'gCanvas.h'),
         path.join(globals.glistappsPath, 'GlistApp', 'src', 'gCanvas.cpp')
@@ -194,9 +194,9 @@ async function LoadTabs() {
     FileProcesses.SaveExtensionJson();
 }
 async function CheckUpdates() {
-    let engineUpdate = vscode.workspace.getConfiguration('glistengine').get('autoUpdate.engine');
-    let pluginsUpdate = vscode.workspace.getConfiguration('glistengine').get('autoUpdate.plugins');
-    let projectsUpdate = vscode.workspace.getConfiguration('glistengine').get('autoUpdate.projects');
+    const engineUpdate = vscode.workspace.getConfiguration('glistengine').get('autoUpdate.engine');
+    const pluginsUpdate = vscode.workspace.getConfiguration('glistengine').get('autoUpdate.plugins');
+    const projectsUpdate = vscode.workspace.getConfiguration('glistengine').get('autoUpdate.projects');
     if (engineUpdate) {
         if (!(await GitProcessses.CheckGitInstallation()))
             return;
@@ -238,8 +238,13 @@ function CheckJsonFile() {
     exports.extensionJsonData = JSON.parse(data);
 }
 async function CloneGlistAppTemplate() {
-    fs.rmSync(path.join(exports.extensionPath, 'GlistApp-vscode'), { recursive: true, force: true });
-    await GitProcessses.CloneRepository(globals.glistAppUrl, exports.extensionPath, false, "Cloning GlistApp Template");
+    try {
+        fs.rmSync(path.join(exports.extensionPath, 'GlistApp-vscode'), { recursive: true, force: true });
+        await GitProcessses.CloneRepository(globals.glistAppUrl, exports.extensionPath, false, "Cloning GlistApp Template");
+    }
+    catch (err) {
+        console.log(`An error occurred while cloning GlistApp Template: ${err}`);
+    }
 }
 function deactivate() { }
 exports.deactivate = deactivate;

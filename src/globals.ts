@@ -42,7 +42,7 @@ export const vscodeSettings = {
         "${workspaceFolder}/../../zbin/glistzbin-win64/clang64/include/**"
     ],
     "terminal.integrated.env.windows": {
-        "Path": "${env:PATH};" + glistPath.split(path.sep).join("/") + "/zbin/glistzbin-win64/CMake/bin"
+        "Path": "${env:PATH};" + glistPath.split(path.sep).join("/") + "/zbin/glistzbin-win64/CMake/bin;" + glistPath.split(path.sep).join("/") + "/zbin/glistzbin-win64/clang64/bin"
     }
 };
 
