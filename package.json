@@ -4,7 +4,7 @@
   "description": "Configures the Visual Studio Code for Glist Engine and makes your job easier.",
   "publisher": "javertus",
   "icon": "images/icon.png",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/javertus/GlistEngine-vscode-extension.git"
@@ -105,6 +105,10 @@
         "title": "Glist Engine: Check Repo Updates"
       },
       {
+        "command": "glist-extension.uninstall",
+        "title": "Glist Engine: Uninstall Glist Engine"
+      },
+      {
         "command": "glist-extension.run-project",
         "title": "Run Project",
         "icon": "$(play)"
@@ -129,25 +133,25 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/adm-zip": "^0.5.5",
+    "@types/adm-zip": "^0.5.7",
     "@types/fs-extra": "^11.0.4",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "^18.19.39",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.1",
     "@types/vscode": "^1.82.0",
-    "@typescript-eslint/eslint-plugin": "^7.11.0",
-    "@typescript-eslint/parser": "^7.11.0",
-    "@vscode/test-cli": "^0.0.9",
-    "@vscode/test-electron": "^2.4.0",
-    "eslint": "^8.57.0",
-    "typescript": "^5.4.5"
+    "@typescript-eslint/eslint-plugin": "^8.47.0",
+    "@typescript-eslint/parser": "^8.47.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "adm-zip": "^0.5.14",
-    "axios": "^1.7.2",
-    "fs-extra": "^11.2.0",
+    "adm-zip": "^0.5.16",
+    "axios": "^1.13.2",
+    "fs-extra": "^11.3.2",
     "json5": "^2.2.3",
-    "rimraf": "^5.0.7",
-    "simple-git": "^3.25.0",
+    "rimraf": "^6.1.2",
+    "simple-git": "^3.30.0",
     "tree-kill": "^1.2.2"
   }
 }

@@ -6,20 +6,17 @@ This extension is designed for the [Glist Engine](https://github.com/GlistEngine
 
 # Features
 
-- Install or update the Glist Engine and its plugins
-- Enable auto-updates for projects, plugins, and the engine
-- Create empty Glist projects
-- Clone a project from a given URL
-- Clone a plugin from a given URL
-- Add all Glist projects to your workspace
-- Automatically add a project to the workspace when it's copied into the `myglistapps` folder
-- Create a new canvas or an empty class within a specified project
-- Delete a project
-- Delete a class from a project
-- Close tabs of non-existent files
-- Provides a "Run" button for easy execution
-- Includes a debugger
+- Glist Engine Installer & Uninstaller
+- Repository Updater (Engine, Projects, Plugins)
+- Creates empty Glist projects
+- Creates a workspace for your projects
+- Clones projects or plugins
+- Adds a project to the workspace when it's copied into the `myglistapps` folder
+- Closes the tabs of non-existent files
+- Includes debugger for better debugging
+
+And more...
 
 # Known Issues
 
-- There are currently no known issues. Please open an issue on GitHub if you encounter any problems.
+- Currently no known issues. Please open an issue on GitHub if you encounter any.

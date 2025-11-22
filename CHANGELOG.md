@@ -1,5 +1,14 @@
 # Change Log
 
+# 1.5.0
+
+## New
+
+- Glist Engine Uninstaller
+- Updated all modules to the latest versions
+- Some minor changes
+
+
 # 1.4.0
 
 ## New

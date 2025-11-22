@@ -15,23 +15,46 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CheckPath = exports.CheckInput = exports.DeleteClassFromProject = exports.AddClassToProject = exports.QuickPickFromWorkspaceFolders = exports.DeleteProject = exports.OpenFiles = exports.CreateNewProject = void 0;
+exports.CreateNewProject = CreateNewProject;
+exports.OpenFiles = OpenFiles;
+exports.DeleteProject = DeleteProject;
+exports.QuickPickFromWorkspaceFolders = QuickPickFromWorkspaceFolders;
+exports.AddClassToProject = AddClassToProject;
+exports.DeleteClassFromProject = DeleteClassFromProject;
+exports.CheckInput = CheckInput;
+exports.CheckPath = CheckPath;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
 const FileProcesses = __importStar(require("./FileProcesses"));
 const globals = __importStar(require("./globals"));
 const WorkspaceProcesses = __importStar(require("./WorkspaceProcesses"));
+const GitProcesses = __importStar(require("./GitProcesses"));
 const extension = __importStar(require("./extension"));
 async function CreateNewProject(projectName = undefined) {
+    if (!fs.existsSync(path.join(extension.extensionPath, 'GlistApp-vscode'))) {
+        if (!(await GitProcesses.CheckGitInstallation()))
+            return;
+        await extension.CloneGlistAppTemplate();
+    }
     let forceCreate = false;
     if (projectName)
         forceCreate = true;
@@ -46,7 +69,7 @@ async function CreateNewProject(projectName = undefined) {
         return;
     projectName = projectName + "";
     if (!CheckPath(path.join(globals.glistappsPath, projectName), "A project named " + projectName + " already exist. Opening already existing project...", false)) {
-        fs.cpSync(path.join(extension.path, 'GlistApp-vscode'), path.join(globals.glistappsPath, projectName), { recursive: true });
+        fs.cpSync(path.join(extension.extensionPath, 'GlistApp-vscode'), path.join(globals.glistappsPath, projectName), { recursive: true });
         fs.rmSync(path.join(globals.glistappsPath, projectName, ".git"), { recursive: true, force: true });
         vscode.window.showInformationMessage('Created new Project.');
     }
@@ -59,7 +82,6 @@ async function CreateNewProject(projectName = undefined) {
     ];
     await OpenFiles(filesToOpen);
 }
-exports.CreateNewProject = CreateNewProject;
 async function OpenFiles(filesToOpen) {
     filesToOpen.forEach(async (file) => {
         const uri = vscode.Uri.file(file);
@@ -67,7 +89,6 @@ async function OpenFiles(filesToOpen) {
         await vscode.window.showTextDocument(document, { preview: false });
     });
 }
-exports.OpenFiles = OpenFiles;
 async function DeleteProject() {
     if (!WorkspaceProcesses.IsUserInWorkspace())
         return;
@@ -87,7 +108,6 @@ async function DeleteProject() {
     FileProcesses.SaveExtensionJson();
     WorkspaceProcesses.ReloadWorkspace();
 }
-exports.DeleteProject = DeleteProject;
 async function QuickPickFromWorkspaceFolders() {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (CheckInput(workspaceFolders))
@@ -105,10 +125,14 @@ async function QuickPickFromWorkspaceFolders() {
         return;
     return folders.find(folder => selectedFolder == `${folder.name} (${folder.path})`);
 }
-exports.QuickPickFromWorkspaceFolders = QuickPickFromWorkspaceFolders;
 async function AddClassToProject(baseFilePath, baseFileName) {
     if (!WorkspaceProcesses.IsUserInWorkspace())
         return;
+    if (!fs.existsSync(path.join(extension.extensionPath, 'GlistApp-vscode'))) {
+        if (!(await GitProcesses.CheckGitInstallation()))
+            return;
+        await extension.CloneGlistAppTemplate();
+    }
     let project = await QuickPickFromWorkspaceFolders();
     if (!project)
         return;
@@ -134,7 +158,6 @@ async function AddClassToProject(baseFilePath, baseFileName) {
     ];
     await OpenFiles(filesToOpen);
 }
-exports.AddClassToProject = AddClassToProject;
 function GetSubFiles(directory) {
     return fs.readdirSync(directory).flatMap(file => {
         const fullPath = path.join(directory, file);
@@ -176,7 +199,6 @@ async function DeleteClassFromProject() {
     FileProcesses.RemoveFileFromCMakeLists(project.path, className);
     await WorkspaceProcesses.CloseNonExistentFileTabs();
 }
-exports.DeleteClassFromProject = DeleteClassFromProject;
 function CheckInput(input, message = "No input provided.") {
     if (!input) {
         vscode.window.showErrorMessage(message);
@@ -184,7 +206,6 @@ function CheckInput(input, message = "No input provided.") {
     }
     return false;
 }
-exports.CheckInput = CheckInput;
 function CheckPath(inputPath, message = undefined, errorMessageIfNotExist = true) {
     if (!fs.existsSync(inputPath) && errorMessageIfNotExist) {
         vscode.window.showErrorMessage(message);
@@ -196,5 +217,4 @@ function CheckPath(inputPath, message = undefined, errorMessageIfNotExist = true
     }
     return false;
 }
-exports.CheckPath = CheckPath;
 //# sourceMappingURL=ProjectProcesses.js.map

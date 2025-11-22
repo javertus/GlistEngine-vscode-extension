@@ -25,7 +25,7 @@ export async function UpdateWorkspace(forceCreate: boolean = false) {
 			extension.jsonData.firstRun = true;
 			extension.jsonData.secondRun = true;
 			FileProcesses.SaveExtensionJson();
-			extension.ConfigureExtension();
+			extension.SetupExtension();
 			return;
 		}
 		let workspaceFolders = [];
@@ -135,12 +135,11 @@ export async function LaunchWorkspace() {
 }
 
 export async function CheckLaunchConfigurations() {
-	FileProcesses.GetSubfolders(globals.glistappsPath).map(folder => {
-		if (fs.existsSync(path.join(folder, "CMakeLists.txt"))) {
-			if (!fs.existsSync(path.join(folder, ".vscode"))) {
-				vscode.window.showInformationMessage("Creating launch configurations for " + path.basename(folder));
-				fs.cpSync(path.join(extension.path, 'GlistApp-vscode', '.vscode'), path.join(folder, '.vscode'), { recursive: true });
-			}
+	FileProcesses.GetSubfolders(globals.glistappsPath).forEach(folder => {
+		if (fs.existsSync(path.join(folder, "CMakeLists.txt")) || fs.existsSync(path.join(folder, ".vscode"))) {
+			return;
 		}
-	});
+		vscode.window.showInformationMessage("Creating launch configurations for " + path.basename(folder));
+		fs.cpSync(path.join(extension.extensionPath, 'GlistApp-vscode', '.vscode'), path.join(folder, '.vscode'), { recursive: true });
+	  });
 }

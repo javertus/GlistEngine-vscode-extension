@@ -9,24 +9,26 @@ import * as GitProcesses from './GitProcesses';
 
 let installation = false;
 
-export async function InstallGlistEngine() {
+export async function InstallGlistEngine(consent = 'No') {
 	if (installation) {
 		vscode.window.showErrorMessage("You can't run this action while installing is in process!");
 		return;
 	}
-	extension.jsonData.installGlistEngine = true;
-	FileProcesses.SaveExtensionJson();
-	if (await FileProcesses.UpdateVSCodeSettings()) return;
-	extension.jsonData.installGlistEngine = false;
-	FileProcesses.SaveExtensionJson();
 
-	const result = await vscode.window.showInformationMessage(
-		'This action will install the Glist Engine and its dependencies. Current Glist Engine installation in /glist folder will be modified if exist. Your projects and plugins will not be affected. Do you want to continue?',
+	let result;
+	consent == 'Yes' ? result = consent : result = await vscode.window.showInformationMessage(
+		'This action will install the Glist Engine and its dependencies. Current Glist Engine installation in /dev/glist folder will be modified if exists. Your projects and plugins will not be affected. Do you want to continue?',
 		{ modal: true },
 		'Yes',
 		'No',
 	);
 	if (result == 'Yes') {
+		extension.jsonData.installGlistEngine = true;
+		FileProcesses.SaveExtensionJson();
+		if (await FileProcesses.UpdateVSCodeSettings()) return;
+		extension.jsonData.installGlistEngine = false;
+		FileProcesses.SaveExtensionJson();
+
 		vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
@@ -38,10 +40,9 @@ export async function InstallGlistEngine() {
 					installation = false;
 					return;
 				}
-				progress.report({ increment: 0 });
 				createDirectories();
-				progress.report({ increment: 20 });
-				await InstallEngine(progress);
+				progress.report({ message: "Installing Engine", increment: 20 });
+				await InstallEngine();
 				progress.report({ increment: 20 });
 				await InstallCmake(progress);
 				progress.report({ increment: 20 });
@@ -67,8 +68,7 @@ export function createDirectories() {
 	fs.ensureDirSync(globals.tempPath);
 }
 
-async function InstallEngine(progress: vscode.Progress<{ message: string, increment: number }>) {
-	progress.report({ message: "Installing Engine", increment: 0 });
+async function InstallEngine() {
 	await fs.remove(path.join(globals.glistPath, "GlistEngine"));
 	await GitProcesses.CloneRepository(globals.glistEngineUrl, globals.glistPath, false);
 }
@@ -78,15 +78,15 @@ async function InstallCmake(progress: vscode.Progress<{ message: string, increme
 	await FileProcesses.DownloadFile(globals.glistCmakeUrl, zipFilePath, "Downloading CMake");
 	progress.report({ message: "Extracting CMake", increment: 0 });
 	await fs.remove(path.join(globals.glistZbinPath, 'CMake'));
-	FileProcesses.ExtractArchive(zipFilePath, globals.glistZbinPath, "CMake Binaries Installed.");
+	FileProcesses.ExtractArchive(zipFilePath, globals.glistZbinPath, "CMake Installed.");
 }
 
 async function InstallClang(progress: vscode.Progress<{ message: string, increment: number }>) {
 	const zipFilePath = path.join(globals.tempPath, 'clang64.zip');
-	await FileProcesses.DownloadFile(globals.glistClangUrl, zipFilePath, "Downloading Clang");
-	progress.report({ message: "Extracting Clang", increment: 0 });
+	await FileProcesses.DownloadFile(globals.glistClangUrl, zipFilePath, "Downloading Binaries");
+	progress.report({ message: "Extracting Binaries", increment: 0 });
 	await fs.remove(path.join(globals.glistZbinPath, 'clang64'));
-	FileProcesses.ExtractArchive(zipFilePath, globals.glistZbinPath, "Clang Binaries Installed.");
+	FileProcesses.ExtractArchive(zipFilePath, globals.glistZbinPath, "Binaries Installed.");
 }
 
 async function createEmptyProject() {

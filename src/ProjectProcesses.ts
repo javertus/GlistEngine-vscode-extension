@@ -4,10 +4,14 @@ import * as path from 'path';
 import * as FileProcesses from './FileProcesses';
 import * as globals from './globals';
 import * as WorkspaceProcesses from './WorkspaceProcesses';
+import * as GitProcesses from './GitProcesses';
 import * as extension from './extension';
 
-
 export async function CreateNewProject(projectName: any = undefined) {
+	if (!fs.existsSync(path.join(extension.extensionPath, 'GlistApp-vscode'))) {
+		if (!(await GitProcesses.CheckGitInstallation())) return;
+		await extension.CloneGlistAppTemplate();
+	} 
 	let forceCreate = false;
 	if (projectName) forceCreate = true;
 	if (!WorkspaceProcesses.IsUserInWorkspace(!forceCreate) && !forceCreate) return;
@@ -19,7 +23,7 @@ export async function CreateNewProject(projectName: any = undefined) {
 	if (CheckInput(projectName)) return;
 	projectName = projectName + "";
 	if (!CheckPath(path.join(globals.glistappsPath, projectName), "A project named " + projectName + " already exist. Opening already existing project...", false)) {
-		fs.cpSync(path.join(extension.path, 'GlistApp-vscode'), path.join(globals.glistappsPath, projectName), { recursive: true });
+		fs.cpSync(path.join(extension.extensionPath, 'GlistApp-vscode'), path.join(globals.glistappsPath, projectName), { recursive: true });
 		fs.rmSync(path.join(globals.glistappsPath, projectName, ".git"), { recursive: true, force: true });
 		vscode.window.showInformationMessage('Created new Project.');
 	}
@@ -78,6 +82,10 @@ export async function QuickPickFromWorkspaceFolders(): Promise<{ name: string; p
 
 export async function AddClassToProject(baseFilePath: string, baseFileName: string) {
 	if (!WorkspaceProcesses.IsUserInWorkspace()) return;
+	if (!fs.existsSync(path.join(extension.extensionPath, 'GlistApp-vscode'))) {
+		if (!(await GitProcesses.CheckGitInstallation())) return;
+		await extension.CloneGlistAppTemplate();
+	} 
 	let project = await QuickPickFromWorkspaceFolders();
 	if (!project) return;
 	let className = await vscode.window.showInputBox({

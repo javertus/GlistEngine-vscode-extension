@@ -3,7 +3,6 @@ import * as os from 'os';
 import * as FileProcesses from './FileProcesses';
 
 
-
 export const currentDrive = FileProcesses.GetGlistDrive();
 
 export const tempPath = path.join(os.tmpdir(), "GlistVSCodeInstaller");

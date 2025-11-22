@@ -17,7 +17,7 @@ let installation = false;
 
 export async function CheckGitInstallation(): Promise<boolean> {
     try {
-        if (!process.env.PATH?.includes(extension.path + "\\git\\cmd")) process.env.PATH += ";" + extension.path + "\\git\\cmd";
+        if (!process.env.PATH?.includes(extension.extensionPath + "\\git\\cmd")) process.env.PATH += ";" + extension.extensionPath + "\\git\\cmd";
         console.log(child_process.execSync("git --version").toString());
         return true;
     }
@@ -46,8 +46,8 @@ async function InstallGit() {
         fs.ensureDirSync(globals.tempPath);
         const zipFilePath = path.join(globals.tempPath, 'git.zip');
         await FileProcesses.DownloadFile(globals.gitUrl, zipFilePath, "Downloading Git");
-        fs.ensureDir(path.join(extension.path, "git"));
-        FileProcesses.ExtractArchive(zipFilePath, path.join(extension.path, "git"), "Git Installed.");
+        fs.ensureDir(path.join(extension.extensionPath, "git"));
+        FileProcesses.ExtractArchive(zipFilePath, path.join(extension.extensionPath, "git"), "Git Installed.");
         installation = false;
     }
     catch (err) {

@@ -15,18 +15,37 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GetGlistDrive = exports.DeleteFolder = exports.GetSubfolders = exports.ExtractArchive = exports.SaveExtensionJson = exports.DownloadFile = exports.RemoveFileFromCMakeLists = exports.AddFileToCMakeLists = exports.ReplaceText = exports.UpdateVSCodeSettings = void 0;
+exports.UpdateVSCodeSettings = UpdateVSCodeSettings;
+exports.ReplaceText = ReplaceText;
+exports.AddFileToCMakeLists = AddFileToCMakeLists;
+exports.RemoveFileFromCMakeLists = RemoveFileFromCMakeLists;
+exports.DownloadFile = DownloadFile;
+exports.SaveExtensionJson = SaveExtensionJson;
+exports.ExtractArchive = ExtractArchive;
+exports.GetSubfolders = GetSubfolders;
+exports.DeleteFolder = DeleteFolder;
+exports.GetGlistDrive = GetGlistDrive;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
@@ -88,13 +107,11 @@ async function UpdateVSCodeSettings() {
         return true;
     }
 }
-exports.UpdateVSCodeSettings = UpdateVSCodeSettings;
 function ReplaceText(inputFilePath, searchText, replaceText) {
     let data = fs.readFileSync(inputFilePath, 'utf8');
     const result = data.replace(new RegExp(searchText, 'g'), replaceText);
     fs.writeFileSync(inputFilePath, result, 'utf8');
 }
-exports.ReplaceText = ReplaceText;
 function AddFileToCMakeLists(projectPath, newFileName) {
     const cmakeListsPath = path.join(projectPath, 'CMakeLists.txt');
     let data = fs.readFileSync(cmakeListsPath, 'utf8');
@@ -116,7 +133,6 @@ function AddFileToCMakeLists(projectPath, newFileName) {
     }
     fs.writeFileSync(cmakeListsPath, data, 'utf8');
 }
-exports.AddFileToCMakeLists = AddFileToCMakeLists;
 function RemoveFileFromCMakeLists(projectPath, fileName) {
     const cmakeListsPath = path.join(projectPath, 'CMakeLists.txt');
     let data = fs.readFileSync(cmakeListsPath, 'utf8');
@@ -149,7 +165,6 @@ function RemoveFileFromCMakeLists(projectPath, fileName) {
     (0, rimraf_1.rimrafSync)(cppFilePath);
     (0, rimraf_1.rimrafSync)(hFilePath);
 }
-exports.RemoveFileFromCMakeLists = RemoveFileFromCMakeLists;
 async function DownloadFile(url, dest, message) {
     await vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
@@ -180,28 +195,23 @@ async function DownloadFile(url, dest, message) {
         fs.writeFileSync(dest, response.data);
     });
 }
-exports.DownloadFile = DownloadFile;
 function SaveExtensionJson() {
     fs.writeFileSync(extension.dataFilePath, JSON.stringify(extension.jsonData, null, 2));
 }
-exports.SaveExtensionJson = SaveExtensionJson;
 function ExtractArchive(zipPath, dest, message) {
     const zip = new adm_zip_1.default(zipPath);
     zip.extractAllTo(dest, true);
     vscode.window.showInformationMessage(message);
 }
-exports.ExtractArchive = ExtractArchive;
 function GetSubfolders(directory) {
     return fs.readdirSync(directory)
         .filter(file => fs.statSync(path.join(directory, file)).isDirectory())
         .map(folder => path.join(directory, folder));
 }
-exports.GetSubfolders = GetSubfolders;
 async function DeleteFolder(folderPath) {
     await (0, rimraf_1.rimraf)(folderPath);
     console.log(`Folder ${folderPath} deleted successfully.`);
 }
-exports.DeleteFolder = DeleteFolder;
 function ArraysUnion(a, b) {
     const set = new Set(a);
     for (const item of b) {
@@ -245,5 +255,4 @@ function GetGlistDrive() {
         return foundDisks[0];
     }
 }
-exports.GetGlistDrive = GetGlistDrive;
 //# sourceMappingURL=FileProcesses.js.map
