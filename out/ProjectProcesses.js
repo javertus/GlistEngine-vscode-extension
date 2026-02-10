@@ -37,7 +37,8 @@ exports.CreateNewProject = CreateNewProject;
 exports.OpenFiles = OpenFiles;
 exports.DeleteProject = DeleteProject;
 exports.QuickPickFromWorkspaceFolders = QuickPickFromWorkspaceFolders;
-exports.AddClassToProject = AddClassToProject;
+exports.CreateCanvas = CreateCanvas;
+exports.CreateClass = CreateClass;
 exports.DeleteClassFromProject = DeleteClassFromProject;
 exports.CheckInput = CheckInput;
 exports.CheckPath = CheckPath;
@@ -125,7 +126,7 @@ async function QuickPickFromWorkspaceFolders() {
         return;
     return folders.find(folder => selectedFolder == `${folder.name} (${folder.path})`);
 }
-async function AddClassToProject(baseFilePath, baseFileName) {
+async function CreateCanvas() {
     if (!WorkspaceProcesses.IsUserInWorkspace())
         return;
     if (!fs.existsSync(path.join(extension.extensionPath, 'GlistApp-vscode'))) {
@@ -133,6 +134,11 @@ async function AddClassToProject(baseFilePath, baseFileName) {
             return;
         await extension.CloneGlistAppTemplate();
     }
+    await CreateClass(path.join(extension.extensionPath, "GlistApp-vscode", "src"), "gCanvas");
+}
+async function CreateClass(baseFilePath, baseFileName) {
+    if (!WorkspaceProcesses.IsUserInWorkspace())
+        return;
     let project = await QuickPickFromWorkspaceFolders();
     if (!project)
         return;

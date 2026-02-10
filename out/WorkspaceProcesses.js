@@ -52,9 +52,9 @@ const extension = __importStar(require("./extension"));
 function IsUserInWorkspace(showErrorMessage = true) {
     let folders = vscode.workspace.workspaceFolders;
     let len = folders?.length;
-    if (!folders || !len || !folders?.filter(folder => folder.uri.fsPath.toLowerCase().includes(globals.glistEnginePath.toLowerCase()))) {
+    if (!folders || !len || !folders.filter(folder => folder.uri.fsPath.toLowerCase() === globals.glistEnginePath.toLowerCase()).length) {
         if (showErrorMessage)
-            vscode.window.showErrorMessage("You should switch to Glist workspace to do that.");
+            vscode.window.showErrorMessage("You should switch to GlistEngine workspace to do that.");
         return false;
     }
     return true;
@@ -64,11 +64,15 @@ async function UpdateWorkspace(forceCreate = false) {
         return;
     try {
         // If glist was not found before but now exists
-        if (fs.existsSync(globals.glistappsPath) && !extension.jsonData.isGlistInstalled) {
+        if (fs.existsSync(globals.glistZbinWindowsPath) && !extension.jsonData.isGlistInstalled) {
             extension.jsonData.firstRun = true;
             extension.jsonData.secondRun = true;
             FileProcesses.SaveExtensionJson();
             extension.SetupExtension();
+            return;
+        }
+        else if (!fs.existsSync(globals.glistZbinWindowsPath)) {
+            vscode.window.showErrorMessage("GlistEngine is not installed.");
             return;
         }
         let workspaceFolders = [];
@@ -88,7 +92,7 @@ async function UpdateWorkspace(forceCreate = false) {
         await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
     }
     catch (error) {
-        vscode.window.showErrorMessage(`Failed to create workspace! Are you sure Glist Engine is installed? ${error}`);
+        vscode.window.showErrorMessage(`Failed to create workspace! Check if Glist Engine is installed. ${error}`);
     }
 }
 async function AddProjectToWorkspace(projectName, forceCreate = false) {

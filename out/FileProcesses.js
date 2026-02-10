@@ -45,6 +45,7 @@ exports.SaveExtensionJson = SaveExtensionJson;
 exports.ExtractArchive = ExtractArchive;
 exports.GetSubfolders = GetSubfolders;
 exports.DeleteFolder = DeleteFolder;
+exports.DeleteFile = DeleteFile;
 exports.GetGlistDrive = GetGlistDrive;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs-extra"));
@@ -212,6 +213,10 @@ async function DeleteFolder(folderPath) {
     await (0, rimraf_1.rimraf)(folderPath);
     console.log(`Folder ${folderPath} deleted successfully.`);
 }
+async function DeleteFile(filePath) {
+    await (0, rimraf_1.rimraf)(filePath);
+    console.log(`File ${filePath} deleted successfully.`);
+}
 function ArraysUnion(a, b) {
     const set = new Set(a);
     for (const item of b) {
@@ -221,7 +226,7 @@ function ArraysUnion(a, b) {
 }
 function GetDisks() {
     let disks = [];
-    const result = (0, child_process_1.execSync)('wmic logicaldisk get name').toString();
+    const result = (0, child_process_1.execSync)('powershell -NoProfile -Command "Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name"').toString();
     disks = result.split('\n').map(line => line.trim()).filter(line => line && line !== 'Name');
     return disks;
 }
@@ -242,15 +247,15 @@ function GetGlistDrive() {
     if (disk)
         return disk;
     if (foundDisks.length == 0) {
-        vscode.window.showWarningMessage(`Glist Engine not found in any disks! Setting glist disk as: ${GetDisks()[0]} You can change the disk from Visual Studio Code settings.`);
-        vscode.workspace.getConfiguration('glistengine').update("glist.disk", GetDisks()[0], 1);
-        return GetDisks()[0];
+        vscode.window.showInformationMessage(`Setting disk for GlistEngine as: ${GetDisks()[0]}: You can change the disk from Visual Studio Code settings.`);
+        vscode.workspace.getConfiguration('glistengine').update("glist.disk", GetDisks()[0] + ":", 1);
+        return GetDisks()[0] + ":";
     }
     else if (foundDisks.length == 1) {
         return foundDisks[0];
     }
     else {
-        vscode.window.showWarningMessage(`More than one glist installations are found! Setting current glist disk as: ${foundDisks[0]} You can change the disk from Visual Studio Code settings.`);
+        vscode.window.showWarningMessage(`More than one GlistEngine installations are found! Setting current glist disk as: ${foundDisks[0]} You can change the disk from Visual Studio Code settings.`);
         vscode.workspace.getConfiguration('glistengine').update("glist.disk", foundDisks[0], 1);
         return foundDisks[0];
     }

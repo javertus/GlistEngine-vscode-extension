@@ -181,6 +181,12 @@ export async function DeleteFolder(folderPath: string) {
 	console.log(`Folder ${folderPath} deleted successfully.`);
 }
 
+export async function DeleteFile(filePath: string) {
+	await rimraf(filePath);
+	console.log(`File ${filePath} deleted successfully.`);
+}
+
+
 function ArraysUnion(a: any[], b: any[]) {
 	const set = new Set(a);
 	for (const item of b) {
@@ -191,7 +197,7 @@ function ArraysUnion(a: any[], b: any[]) {
 
 function GetDisks(): string[] {
 	let disks: string[] = [];
-	const result = execSync('wmic logicaldisk get name').toString();
+	const result = execSync('powershell -NoProfile -Command "Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name"').toString();
 	disks = result.split('\n').map(line => line.trim()).filter(line => line && line !== 'Name');
 	return disks;
 }
@@ -215,15 +221,15 @@ export function GetGlistDrive() {
 	let disk = vscode.workspace.getConfiguration('glistengine').get<string>('glist.disk');
 	if (disk) return disk;
 	if (foundDisks.length == 0) {
-		vscode.window.showWarningMessage(`Glist Engine not found in any disks! Setting glist disk as: ${GetDisks()[0]} You can change the disk from Visual Studio Code settings.`)
-		vscode.workspace.getConfiguration('glistengine').update("glist.disk", GetDisks()[0], 1);
-		return GetDisks()[0];
+		vscode.window.showInformationMessage(`Setting disk for GlistEngine as: ${GetDisks()[0]}: You can change the disk from Visual Studio Code settings.`)
+		vscode.workspace.getConfiguration('glistengine').update("glist.disk", GetDisks()[0] + ":", 1);
+		return GetDisks()[0] + ":";
 	}
 	else if (foundDisks.length == 1) {
 		return foundDisks[0];
 	}
 	else {
-		vscode.window.showWarningMessage(`More than one glist installations are found! Setting current glist disk as: ${foundDisks[0]} You can change the disk from Visual Studio Code settings.`)
+		vscode.window.showWarningMessage(`More than one GlistEngine installations are found! Setting current glist disk as: ${foundDisks[0]} You can change the disk from Visual Studio Code settings.`)
 		vscode.workspace.getConfiguration('glistengine').update("glist.disk", foundDisks[0], 1);
 		return foundDisks[0];
 	}

@@ -1,139 +1,168 @@
 # Change Log
 
-# 1.5.0
+## 1.5.1
 
-## New
+### Added
+- "Engine Only" uninstallation option to keep projects and plugins
 
+### Changed
+- Bumped all dependencies to their latest versions
+- Updated minimum VS Code version to 1.105.0
+
+### Fixed
+- Various compatibility issues and bugs
+
+
+## 1.5.0
+
+### Added
 - Glist Engine Uninstaller
-- Updated all modules to the latest versions
-- Some minor changes
+
+### Changed
+- Bumped all dependencies to their latest versions
+
+### Fixed
+- Minor bugs and small improvements
 
 
-# 1.4.0
+## 1.4.0
 
-## New
+### Changed
+- Engine folder can no longer be removed from the workspace
+- Projects are now added to the workspace by copying them into the myglistapps folder
 
-- Some bug fixes and code changes
-- Engine folder isn't removable from workspace anymore
-- Adds projects to workspace by copying into myglistapps folder
+### Fixed
+- Bug fixes and internal code improvements
 
-# 1.3.7
 
-## New
+## 1.3.7
 
-- Minor bug fix
+### Fixed
+- Minor bug fixes
 
-# 1.3.6
 
-## New
+## 1.3.6
 
-- Minor bug fix
-- Clones plugin from given URL
+### Added
+- Plugin cloning from a given URL
 
-# 1.3.5
+### Fixed
+- Minor bug fixes
 
-## New
 
-- Fixed [Issue](https://github.com/javertus/GlistEngine-vscode-extension/issues/1)
+## 1.3.5
 
-# 1.3.4
+### Fixed
+- Resolved Issue #1 (https://github.com/javertus/GlistEngine-vscode-extension/issues/1)
 
-## New
 
-- Minor bug fix
+## 1.3.4
 
-# 1.3.3
+### Fixed
+- Minor bug fixes
 
-## New
 
-- Minor bug fix
+## 1.3.3
 
-# 1.3.2
+### Fixed
+- Minor bug fixes
 
-## New
 
-- Minor bug fix
+## 1.3.2
 
-# 1.3.1
+### Fixed
+- Minor bug fixes
 
-## New
 
-- Added a run button.
-- Fixed a bug that caused launch configurations to not be created after cloning a project.
-- Fixed a bug that caused deleted file tabs to not get closed.
-- When deleting a project or class, you can select the name of it from the given list instead of typing the name.
+## 1.3.1
 
-# 1.3.0
+### Added
+- Run button for easier execution
+- Project and class deletion now supports selection from a list instead of manual input
 
-## New
+### Fixed
+- Launch configurations not being created after cloning a project
+- Deleted file tabs not closing properly
 
-- Instals or updates glist plugins.
-- Updates the engine.
-- Auto updates.
-- Clones project.
-- When Installing or cloning, you can see the percentage of how much is completed.
 
-# 1.2.7
+## 1.3.0
 
-## New
+### Added
+- Plugin installation and update support
+- Engine update support
+- Automatic updates
+- Project cloning
+- Progress percentage display during installation and cloning
 
-- Minor bug fix
 
-# 1.2.6
+## 1.2.7
 
-## New
+### Fixed
+- Minor bug fixes
 
-- Minor bug fix
 
-# 1.2.5
+## 1.2.6
 
-## New
+### Fixed
+- Minor bug fixes
 
-- Deletes class from given project.
-- Code changes.
 
-# 1.2.4
+## 1.2.5
 
-## New
+### Added
+- Class deletion from a selected project
 
-- Minor bug fix
+### Changed
+- Internal code improvements
 
-# 1.2.3
 
-## New
+## 1.2.4
 
-- Minor bug fix
+### Fixed
+- Minor bug fixes
 
-# 1.2.2
 
-## New
+## 1.2.3
 
-- Fixed: After installing the engine, Visual Studio Code should be restarted manually because CMake cannot be found at path of old terminals.
-- Fixed bugs that occurred at version 1.2.1
+### Fixed
+- Minor bug fixes
 
-# 1.2.1
 
-## New
+## 1.2.2
 
-- Fixed: Syntax errors shown after first launch. Cmake extension needs to be configured manually.
-- Removed extensions that is not necessary.
+### Fixed
+- Visual Studio Code restart requirement after engine installation due to CMake path issues
+- Bugs introduced in version 1.2.1
 
-# 1.2.0
 
-## New
+## 1.2.1
 
-- Creating new canvas or empty class to given project
-- Closing non-existent file tabs
-- Deleting projects
-- Various bug fixes
+### Fixed
+- Syntax errors shown after first launch
+- Removed unnecessary extensions
 
-# 1.1.0
 
-## New
+## 1.2.0
 
-- Feature: Installing Glist Engine
-- Some code changes and bug fixes
+### Added
+- Create new canvas or empty class in a project
+- Project deletion support
+- Automatic closing of non-existent file tabs
 
-# 1.0.0
+### Fixed
+- Various bugs
 
+
+## 1.1.0
+
+### Added
+- Glist Engine installation support
+
+### Fixed
+- Bug fixes and internal improvements
+
+
+## 1.0.0
+
+### Added
 - Initial release

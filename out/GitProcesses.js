@@ -315,7 +315,7 @@ async function CloneRepository(url, clonePath, cancellable = true, title = 'Clon
     });
 }
 async function CloneProject() {
-    if (!WorkspaceProcesses.IsUserInWorkspace(false))
+    if (!WorkspaceProcesses.IsUserInWorkspace())
         return;
     if (!(await CheckGitInstallation()))
         return;

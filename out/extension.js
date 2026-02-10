@@ -42,7 +42,7 @@ const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs-extra"));
 const globals = __importStar(require("./globals"));
-const GitProcessses = __importStar(require("./GitProcesses"));
+const GitProcesses = __importStar(require("./GitProcesses"));
 const InstallEngine = __importStar(require("./InstallEngine"));
 const FileProcesses = __importStar(require("./FileProcesses"));
 const ProjectProcesses = __importStar(require("./ProjectProcesses"));
@@ -58,10 +58,10 @@ function activate(context) {
         await WorkspaceProcesses.UpdateWorkspace();
     });
     vscode.commands.registerCommand('glist-extension.add-canvas-to-project', async () => {
-        await ProjectProcesses.AddClassToProject(path.join(exports.extensionPath, "GlistApp-vscode", "src"), "gCanvas");
+        await ProjectProcesses.CreateCanvas();
     });
     vscode.commands.registerCommand('glist-extension.add-class-to-project', async () => {
-        await ProjectProcesses.AddClassToProject(path.join(exports.extensionPath), "EmptyClass");
+        await ProjectProcesses.CreateClass(path.join(exports.extensionPath), "EmptyClass");
     });
     vscode.commands.registerCommand('glist-extension.delete-class-from-project', async () => {
         await ProjectProcesses.DeleteClassFromProject();
@@ -69,29 +69,29 @@ function activate(context) {
     vscode.commands.registerCommand('glist-extension.switch-workspace', async () => {
         await WorkspaceProcesses.LaunchWorkspace();
     });
-    vscode.commands.registerCommand('glist-extension.install-glistengine', async () => {
-        await InstallEngine.InstallGlistEngine();
-    });
     vscode.commands.registerCommand('glist-extension.clone-plugin', async () => {
-        await GitProcessses.ClonePlugin();
+        await GitProcesses.ClonePlugin();
     });
     vscode.commands.registerCommand('glist-extension.clone-pluginurl', async () => {
-        await GitProcessses.ClonePluginUrl();
+        await GitProcesses.ClonePluginUrl();
     });
     vscode.commands.registerCommand('glist-extension.update-repos', async () => {
-        await GitProcessses.CheckRepoUpdates();
+        await GitProcesses.CheckRepoUpdates();
     });
     vscode.commands.registerCommand('glist-extension.clone-project', async () => {
-        await GitProcessses.CloneProject();
-    });
-    vscode.commands.registerCommand('glist-extension.reset', async () => {
-        ResetExtension();
+        await GitProcesses.CloneProject();
     });
     vscode.commands.registerCommand('glist-extension.uninstall', async () => {
         await Uninstall();
     });
     vscode.commands.registerCommand('glist-extension.run-project', async () => {
         vscode.commands.executeCommand('workbench.action.debug.start');
+    });
+    vscode.commands.registerCommand('glist-extension.install-glistengine', async () => {
+        await InstallEngine.InstallGlistEngine();
+    });
+    vscode.commands.registerCommand('glist-extension.reset', async () => {
+        await ResetExtension();
     });
     exports.extensionPath = context.extensionPath;
     exports.dataFilePath = path.join(exports.extensionPath, 'ExtensionData.json');
@@ -161,25 +161,23 @@ async function OnExtensionStart() {
         await LoadTabs();
     }
     if (exports.jsonData.uninstall) {
-        await Uninstall('Yes');
+        await Uninstall(exports.jsonData.uninstall);
     }
 }
 async function SetupExtension() {
     try {
-        // Do not create workspace and stop setup process if glistapps does not exist (Also Meaning Glist Engine is not installed.)
-        if (!fs.existsSync(globals.glistappsPath)) {
+        // Do not create workspace and stop setup process if zbinPath does not exist (Meaning Glist Engine is not installed.)
+        if (!fs.existsSync(globals.glistZbinWindowsPath)) {
             exports.jsonData.firstRun = false;
             exports.jsonData.secondRun = false;
             FileProcesses.SaveExtensionJson();
             return;
         }
-        fs.rmSync(path.join(exports.extensionPath, 'GlistApp-vscode'), { recursive: true, force: true });
-        await CloneGlistAppTemplate();
         // Install ninja if does not exist
-        if (!fs.existsSync(path.join(globals.glistZbinPath, "CMake", "bin", "ninja.exe"))) {
-            const ninjaPath = path.join(globals.glistZbinPath, "CMake", "bin", "ninja.zip");
+        if (!fs.existsSync(path.join(globals.glistZbinWindowsPath, "CMake", "bin", "ninja.exe"))) {
+            const ninjaPath = path.join(globals.glistZbinWindowsPath, "CMake", "bin", "ninja.zip");
             await FileProcesses.DownloadFile(globals.ninjaUrl, ninjaPath, "Downloading Ninja");
-            FileProcesses.ExtractArchive(ninjaPath, path.join(globals.glistZbinPath, "CMake", "bin"), "");
+            FileProcesses.ExtractArchive(ninjaPath, path.join(globals.glistZbinWindowsPath, "CMake", "bin"), "");
             fs.removeSync(ninjaPath);
         }
         if (await FileProcesses.UpdateVSCodeSettings())
@@ -189,7 +187,7 @@ async function SetupExtension() {
         FileProcesses.SaveExtensionJson();
         // Opens the new workspace. Setup cannot continue after here because vscode restarts. For resuming setup, there is a secondary setup run.
         await WorkspaceProcesses.UpdateWorkspace(true);
-        // If workspace was already opened vscode will not restart so setup can continue.
+        // If workspace was already active, vscode will not restart so setup can continue.
         if (WorkspaceProcesses.IsUserInWorkspace(false))
             await LoadTabs();
     }
@@ -213,45 +211,57 @@ async function CheckUpdates() {
     const engineUpdate = vscode.workspace.getConfiguration('glistengine').get('autoUpdate.engine');
     const pluginsUpdate = vscode.workspace.getConfiguration('glistengine').get('autoUpdate.plugins');
     const projectsUpdate = vscode.workspace.getConfiguration('glistengine').get('autoUpdate.projects');
-    if (!(await GitProcessses.CheckGitInstallation()))
+    if (!(await GitProcesses.CheckGitInstallation()))
         return;
     if (engineUpdate) {
-        GitProcessses.UpdateRepository(path.join(globals.glistPath, "GlistEngine"), true);
+        GitProcesses.UpdateRepository(path.join(globals.glistPath, "GlistEngine"), true);
     }
     if (pluginsUpdate) {
         FileProcesses.GetSubfolders(globals.glistpluginsPath).map(folder => {
             if (fs.existsSync(path.join(folder, ".git"))) {
-                GitProcessses.UpdateRepository(folder, true);
+                GitProcesses.UpdateRepository(folder, true);
             }
         });
     }
     if (projectsUpdate) {
         FileProcesses.GetSubfolders(globals.glistappsPath).map(folder => {
             if (fs.existsSync(path.join(folder, ".git"))) {
-                GitProcessses.UpdateRepository(folder, true);
+                GitProcesses.UpdateRepository(folder, true);
             }
         });
     }
-    GitProcessses.UpdateRepository(path.join(exports.extensionPath, "GlistApp-vscode"), true);
+    if (!fs.existsSync(path.join(exports.extensionPath, 'GlistApp-vscode'))) {
+        await CloneGlistAppTemplate();
+    }
+    else {
+        GitProcesses.UpdateRepository(path.join(exports.extensionPath, "GlistApp-vscode"), true);
+    }
 }
-function ResetExtension() {
+async function ResetExtension() {
     exports.jsonData.firstRun = true;
     exports.jsonData.secondRun = true;
     exports.jsonData.isGlistInstalled = false;
     exports.jsonData.uninstall = false;
     FileProcesses.SaveExtensionJson();
+    const config = vscode.workspace.getConfiguration('glistengine');
+    for (const key of globals.GLISTENGINE_SETTINGS) {
+        await config.update(key, undefined, vscode.ConfigurationTarget.Global);
+    }
     WorkspaceProcesses.ReloadWorkspace();
 }
-async function Uninstall(consent = 'No') {
+async function Uninstall(consent = '') {
     if (!exports.jsonData.isGlistInstalled) {
         vscode.window.showErrorMessage("Glist Engine Is Not Installed!");
         return;
     }
-    let result;
-    consent == 'Yes' ? result = consent : result = await vscode.window.showInformationMessage('Do you want to uninstall Glist Engine? This action will erase all your projects, plugins and engine itself.', { modal: true }, 'Yes', 'No');
-    if (result == 'Yes') {
+    if (!consent)
+        consent = await vscode.window.showInformationMessage(`Do you want to uninstall Glist Engine? This action will delete all your projects, plugins and engine`, { modal: true, detail: `Choose "Engine Only" if you just want to delete GlistEngine and its binaries (Your projects and plugins will not be affected).` }, 'Yes', 'Engine Only');
+    if (consent == 'Yes' || consent == 'Engine Only') {
         if (!exports.jsonData.uninstall) {
-            exports.jsonData.uninstall = true;
+            const doubleCheck = await vscode.window.showInformationMessage(`Are you sure?`, { modal: true }, 'Yes');
+            if (doubleCheck != 'Yes')
+                return;
+            exports.jsonData.uninstall = consent;
             FileProcesses.SaveExtensionJson();
             await vscode.commands.executeCommand('workbench.action.closeAllEditors');
             await vscode.commands.executeCommand('vscode.newWindow', { reuseWindow: true });
@@ -262,24 +272,32 @@ async function Uninstall(consent = 'No') {
             cancellable: false,
             title: 'Uninstalling Glist Engine'
         }, async (progress) => {
-            while (fs.pathExistsSync(globals.glistPath)) {
+            while ((fs.pathExistsSync(globals.glistPath) && consent == 'Yes') ||
+                (fs.pathExistsSync(globals.glistEngineRootPath) && fs.pathExistsSync(globals.glistZbinWindowsPath) && consent == 'Engine Only')) {
                 try {
-                    await FileProcesses.DeleteFolder(globals.glistPath);
+                    if (consent == 'Yes') {
+                        await FileProcesses.DeleteFolder(globals.glistPath);
+                    }
+                    else if (consent == 'Engine Only') {
+                        await FileProcesses.DeleteFolder(globals.glistEngineRootPath);
+                        await FileProcesses.DeleteFolder(globals.glistZbinWindowsPath);
+                        await FileProcesses.DeleteFile(globals.workspaceFilePath);
+                    }
                 }
                 catch (err) {
                     console.log(err);
                     vscode.window.showErrorMessage(`An error occurred while uninstalling Glist Engine: ${err}`);
-                    progress.report({ message: "Cannot Uninstall! Please close everything running under /dev/glist/ folder" });
+                    progress.report({ message: "Cannot Uninstall! Please close everything running under /dev/glist/ path" });
                 }
             }
             vscode.window.showInformationMessage("Glist Engine Uninstalled.");
-            ResetExtension();
+            await ResetExtension();
         });
     }
 }
 function InitializeJsonFile() {
     if (!fs.existsSync(exports.dataFilePath)) {
-        let initialData = { firstRun: true, secondRun: true, installGlistEngine: false, isGlistInstalled: false, uninstall: false };
+        let initialData = { firstRun: true, secondRun: true, installGlistEngine: false, isGlistInstalled: false, uninstall: '' };
         fs.writeFileSync(exports.dataFilePath, JSON.stringify(initialData, null, 2));
     }
     let data = fs.readFileSync(exports.dataFilePath, 'utf8');
@@ -287,7 +305,7 @@ function InitializeJsonFile() {
 }
 async function CloneGlistAppTemplate() {
     try {
-        return await GitProcessses.CloneRepository(globals.glistAppUrl, exports.extensionPath, false, "Cloning GlistApp Template");
+        return await GitProcesses.CloneRepository(globals.glistAppUrl, exports.extensionPath, false, "Cloning GlistApp Template");
     }
     catch (err) {
         console.log(`An error occurred while cloning GlistApp Template: ${err}`);

@@ -80,12 +80,17 @@ export async function QuickPickFromWorkspaceFolders(): Promise<{ name: string; p
 	return folders.find(folder => selectedFolder == `${folder.name} (${folder.path})`);
 }
 
-export async function AddClassToProject(baseFilePath: string, baseFileName: string) {
+export async function CreateCanvas() {
 	if (!WorkspaceProcesses.IsUserInWorkspace()) return;
 	if (!fs.existsSync(path.join(extension.extensionPath, 'GlistApp-vscode'))) {
 		if (!(await GitProcesses.CheckGitInstallation())) return;
 		await extension.CloneGlistAppTemplate();
 	} 
+	await CreateClass(path.join(extension.extensionPath, "GlistApp-vscode", "src"), "gCanvas");
+}
+
+export async function CreateClass(baseFilePath: string, baseFileName: string) {
+	if (!WorkspaceProcesses.IsUserInWorkspace()) return;
 	let project = await QuickPickFromWorkspaceFolders();
 	if (!project) return;
 	let className = await vscode.window.showInputBox({

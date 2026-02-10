@@ -281,7 +281,7 @@ export async function CloneRepository(url: string, clonePath: string, cancellabl
 }
 
 export async function CloneProject() {
-    if (!WorkspaceProcesses.IsUserInWorkspace(false)) return;
+    if (!WorkspaceProcesses.IsUserInWorkspace()) return;
     if (!(await CheckGitInstallation())) return;
     let input = await vscode.window.showInputBox({
         placeHolder: 'Paste the Project URL here.'

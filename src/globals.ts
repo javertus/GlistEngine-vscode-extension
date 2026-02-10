@@ -8,7 +8,9 @@ export const currentDrive = FileProcesses.GetGlistDrive();
 export const tempPath = path.join(os.tmpdir(), "GlistVSCodeInstaller");
 export const glistappsPath = path.join(currentDrive, "\\dev\\glist\\myglistapps\\");
 export const glistEnginePath = path.join(currentDrive, "\\dev\\glist\\GlistEngine\\engine");
-export const glistZbinPath = path.join(currentDrive, "\\dev\\glist\\zbin\\glistzbin-win64");
+export const glistEngineRootPath = path.join(currentDrive, "\\dev\\glist\\GlistEngine");
+export const glistZbinRootPath = path.join(currentDrive, "\\dev\\glist\\zbin");
+export const glistZbinWindowsPath = path.join(currentDrive, "\\dev\\glist\\zbin\\glistzbin-win64");
 export const workspaceFilePath = path.join(currentDrive, "\\dev\\glist\\Glist.code-workspace");
 export const glistpluginsPath = path.join(currentDrive, "\\dev\\glist\\glistplugins");
 export const glistPath = path.join(currentDrive, "\\dev\\glist");
@@ -44,6 +46,13 @@ export const vscodeSettings = {
         "Path": "${env:PATH};" + glistPath.split(path.sep).join("/") + "/zbin/glistzbin-win64/CMake/bin;" + glistPath.split(path.sep).join("/") + "/zbin/glistzbin-win64/clang64/bin"
     }
 };
+
+export const GLISTENGINE_SETTINGS = [
+    'autoUpdate.engine',
+    'autoUpdate.plugins',
+    'autoUpdate.projects',
+    'glist.disk',
+  ];
 
 export const vscodeSettingsPath = path.join(
     process.env.HOME || process.env.USERPROFILE || '',

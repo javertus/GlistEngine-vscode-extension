@@ -44,14 +44,14 @@ const globals = __importStar(require("./globals"));
 const ProjectProcesses = __importStar(require("./ProjectProcesses"));
 const GitProcesses = __importStar(require("./GitProcesses"));
 let installation = false;
-async function InstallGlistEngine(consent = 'No') {
+async function InstallGlistEngine(consent = '') {
     if (installation) {
         vscode.window.showErrorMessage("You can't run this action while installing is in process!");
         return;
     }
-    let result;
-    consent == 'Yes' ? result = consent : result = await vscode.window.showInformationMessage('This action will install the Glist Engine and its dependencies. Current Glist Engine installation in /dev/glist folder will be modified if exists. Your projects and plugins will not be affected. Do you want to continue?', { modal: true }, 'Yes', 'No');
-    if (result == 'Yes') {
+    if (!consent)
+        consent = await vscode.window.showInformationMessage('This action will install the Glist Engine and its dependencies. Current Glist Engine installation in /dev/glist folder will be modified if exists. Your projects and plugins will not be affected. Do you want to continue?', { modal: true }, 'Yes', 'No');
+    if (consent == 'Yes') {
         extension.jsonData.installGlistEngine = true;
         FileProcesses.SaveExtensionJson();
         if (await FileProcesses.UpdateVSCodeSettings())
@@ -103,15 +103,15 @@ async function InstallCmake(progress) {
     const zipFilePath = path.join(globals.tempPath, 'CMake.zip');
     await FileProcesses.DownloadFile(globals.glistCmakeUrl, zipFilePath, "Downloading CMake");
     progress.report({ message: "Extracting CMake", increment: 0 });
-    await fs.remove(path.join(globals.glistZbinPath, 'CMake'));
-    FileProcesses.ExtractArchive(zipFilePath, globals.glistZbinPath, "CMake Installed.");
+    await fs.remove(path.join(globals.glistZbinWindowsPath, 'CMake'));
+    FileProcesses.ExtractArchive(zipFilePath, globals.glistZbinWindowsPath, "CMake Installed.");
 }
 async function InstallClang(progress) {
     const zipFilePath = path.join(globals.tempPath, 'clang64.zip');
     await FileProcesses.DownloadFile(globals.glistClangUrl, zipFilePath, "Downloading Binaries");
     progress.report({ message: "Extracting Binaries", increment: 0 });
-    await fs.remove(path.join(globals.glistZbinPath, 'clang64'));
-    FileProcesses.ExtractArchive(zipFilePath, globals.glistZbinPath, "Binaries Installed.");
+    await fs.remove(path.join(globals.glistZbinWindowsPath, 'clang64'));
+    FileProcesses.ExtractArchive(zipFilePath, globals.glistZbinWindowsPath, "Binaries Installed.");
 }
 async function createEmptyProject() {
     vscode.window.showInformationMessage("Creating Empty Project");
