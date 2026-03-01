@@ -160,11 +160,6 @@ function RemoveFileFromCMakeLists(projectPath, fileName) {
         data = data.replace(headersPattern, `set(GlistApp_HEADERS\n${newHeaders}\n)`);
     }
     fs.writeFileSync(cmakeListsPath, data, 'utf8');
-    // Delete the .cpp and .h files
-    const cppFilePath = path.join(projectPath, 'src', `${fileName}.cpp`);
-    const hFilePath = path.join(projectPath, 'src', `${fileName}.h`);
-    (0, rimraf_1.rimrafSync)(cppFilePath);
-    (0, rimraf_1.rimrafSync)(hFilePath);
 }
 async function DownloadFile(url, dest, message) {
     await vscode.window.withProgress({
@@ -210,12 +205,22 @@ function GetSubfolders(directory) {
         .map(folder => path.join(directory, folder));
 }
 async function DeleteFolder(folderPath) {
-    await (0, rimraf_1.rimraf)(folderPath);
-    console.log(`Folder ${folderPath} deleted successfully.`);
+    try {
+        await (0, rimraf_1.rimraf)(folderPath);
+        console.log(`Folder ${folderPath} deleted successfully.`);
+    }
+    catch (err) {
+        vscode.window.showErrorMessage(`Failed to deiete ${folderPath}`);
+    }
 }
 async function DeleteFile(filePath) {
-    await (0, rimraf_1.rimraf)(filePath);
-    console.log(`File ${filePath} deleted successfully.`);
+    try {
+        await (0, rimraf_1.rimraf)(filePath);
+        console.log(`File ${filePath} deleted successfully.`);
+    }
+    catch (err) {
+        vscode.window.showErrorMessage(`Failed to deiete ${filePath}`);
+    }
 }
 function ArraysUnion(a, b) {
     const set = new Set(a);

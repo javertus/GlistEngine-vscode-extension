@@ -6,7 +6,7 @@ import * as FileProcesses from './FileProcesses';
 export const currentDrive = FileProcesses.GetGlistDrive();
 
 export const tempPath = path.join(os.tmpdir(), "GlistVSCodeInstaller");
-export const glistappsPath = path.join(currentDrive, "\\dev\\glist\\myglistapps\\");
+export const glistappsPath = path.join(currentDrive, "\\dev\\glist\\myglistapps");
 export const glistEnginePath = path.join(currentDrive, "\\dev\\glist\\GlistEngine\\engine");
 export const glistEngineRootPath = path.join(currentDrive, "\\dev\\glist\\GlistEngine");
 export const glistZbinRootPath = path.join(currentDrive, "\\dev\\glist\\zbin");
@@ -15,9 +15,9 @@ export const workspaceFilePath = path.join(currentDrive, "\\dev\\glist\\Glist.co
 export const glistpluginsPath = path.join(currentDrive, "\\dev\\glist\\glistplugins");
 export const glistPath = path.join(currentDrive, "\\dev\\glist");
 
-export const glistAppUrl = "https://github.com/javertus/GlistApp-vscode";
-export const glistPluginsUrl = "https://github.com/GlistPlugins/"
-export const pluginReposUrl = `https://api.github.com/orgs/GlistPlugins/repos`;
+export const glistappUrl = "https://github.com/javertus/GlistApp-vscode";
+export const glistpluginsUrl = "https://github.com/GlistPlugins/";
+export const pluginReposUrl = `https://api.github.com/orgs/GlistPlugins/repos?per_page=999`;
 export const glistEngineUrl = "https://github.com/GlistEngine/GlistEngine";
 export const glistClangUrl = "https://github.com/javertus/glistzbin-win64-vscode/releases/download/Dependencies/clang64.zip";
 export const glistCmakeUrl = "https://github.com/javertus/glistzbin-win64-vscode/releases/download/Dependencies/CMake.zip";
@@ -26,9 +26,6 @@ export const ninjaUrl = "https://github.com/ninja-build/ninja/releases/download/
 
 export const vscodeSettings = {
     "extensions.ignoreRecommendations": true,
-    /*"cmake.options.statusBarVisibility": "visible",
-    "cmake.showOptionsMovedNotification": false,
-    "cmake.configureOnOpen": true,*/
     "security.workspace.trust.enabled": false,
     "security.workspace.trust.banner": "never",
     "security.workspace.trust.untrustedFiles": "open",

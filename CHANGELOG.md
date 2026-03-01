@@ -1,5 +1,18 @@
 # Change Log
 
+## 1.5.2
+
+### Changed
+- Set the engine folder as the first workspace folder to prevent extension host restarts.
+- Internal code improvements.
+
+### Fixed
+- Entering invalid file or folder names.
+- Projects copied into the `myglistapps` folder not being added properly to the workspace.
+- Incomplete fetching of the plugin repository list.
+- Busy directory errors that occurred when deleting a project.
+- Minor bug fixes
+
 ## 1.5.1
 
 ### Added
@@ -53,7 +66,7 @@
 ## 1.3.5
 
 ### Fixed
-- Resolved Issue #1 (https://github.com/javertus/GlistEngine-vscode-extension/issues/1)
+- Resolved Issue #1
 
 
 ## 1.3.4

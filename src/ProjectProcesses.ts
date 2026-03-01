@@ -11,7 +11,7 @@ export async function CreateNewProject(projectName: any = undefined) {
 	if (!fs.existsSync(path.join(extension.extensionPath, 'GlistApp-vscode'))) {
 		if (!(await GitProcesses.CheckGitInstallation())) return;
 		await extension.CloneGlistAppTemplate();
-	} 
+	}
 	let forceCreate = false;
 	if (projectName) forceCreate = true;
 	if (!WorkspaceProcesses.IsUserInWorkspace(!forceCreate) && !forceCreate) return;
@@ -20,21 +20,22 @@ export async function CreateNewProject(projectName: any = undefined) {
 			placeHolder: "Enter the name of new Project"
 		});
 	}
-	if (CheckInput(projectName)) return;
+	const result = CheckFolderInput(projectName);
+	if (result) {
+		await vscode.window.showErrorMessage(result);
+		return;
+	}
 	projectName = projectName + "";
-	if (!CheckPath(path.join(globals.glistappsPath, projectName), "A project named " + projectName + " already exist. Opening already existing project...", false)) {
+	projectName = projectName.trim();
+	if (fs.existsSync(path.join(globals.glistappsPath, projectName))) {
+		vscode.window.showErrorMessage("A project named " + projectName + " already exist. Opening already existing project...");
+	}
+	else {
 		fs.cpSync(path.join(extension.extensionPath, 'GlistApp-vscode'), path.join(globals.glistappsPath, projectName), { recursive: true });
 		fs.rmSync(path.join(globals.glistappsPath, projectName, ".git"), { recursive: true, force: true });
 		vscode.window.showInformationMessage('Created new Project.');
 	}
-
 	await WorkspaceProcesses.AddProjectToWorkspace(projectName, forceCreate);
-	if (forceCreate) return;
-	const filesToOpen = [
-		path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.h'),
-		path.join(globals.glistappsPath, projectName, 'src', 'gCanvas.cpp')
-	];
-	await OpenFiles(filesToOpen);
 }
 
 export async function OpenFiles(filesToOpen: string[]) {
@@ -51,17 +52,19 @@ export async function DeleteProject() {
 	if (!project) return;
 
 	let decision = await vscode.window.showInputBox({
-		placeHolder: 'Are you sure about deleting this project? Type "yes" to continue.'
+		placeHolder: `Are you sure about deleting this project? Type "${project.name}" to continue.`
 	});
-	if (!(decision?.toLowerCase() == "yes")) {
+
+	if (decision != project.name) {
 		vscode.window.showErrorMessage("Deleting Project Cancelled!");
 		return;
 	}
-	WorkspaceProcesses.RemoveProjectFromWorkspace(project.name)
-	FileProcesses.DeleteFolder(project.path);
-	extension.jsonData.deleteFolder = project.path;
-	FileProcesses.SaveExtensionJson();
-	WorkspaceProcesses.ReloadWorkspace();
+	WorkspaceProcesses.RemoveProjectFromWorkspace(project.path);
+	for (const terminal of vscode.window.terminals) {
+		terminal.dispose(); // Close open terminals to prevent folder locks.
+	}
+	await new Promise(r => setTimeout(r, 1000)); // Wait for running shell tasks to exit (e.g., GlistApp.exe).
+	await FileProcesses.DeleteFolder(project.path);
 }
 
 export async function QuickPickFromWorkspaceFolders(): Promise<{ name: string; path: string } | undefined> {
@@ -69,7 +72,7 @@ export async function QuickPickFromWorkspaceFolders(): Promise<{ name: string; p
 	if (CheckInput(workspaceFolders)) return;
 	let folders: Array<any> = [];
 	workspaceFolders?.forEach(folder => {
-		if (!(folder.uri.fsPath.toLowerCase() == globals.glistEnginePath.toLowerCase())) {
+		if (folder.uri.fsPath.toLowerCase() != globals.glistEnginePath.toLowerCase() && !folder.uri.fsPath.toLowerCase().includes(globals.glistpluginsPath.toLowerCase())) {
 			folders.push({ name: folder.name, path: folder.uri.fsPath })
 		}
 	});
@@ -85,7 +88,7 @@ export async function CreateCanvas() {
 	if (!fs.existsSync(path.join(extension.extensionPath, 'GlistApp-vscode'))) {
 		if (!(await GitProcesses.CheckGitInstallation())) return;
 		await extension.CloneGlistAppTemplate();
-	} 
+	}
 	await CreateClass(path.join(extension.extensionPath, "GlistApp-vscode", "src"), "gCanvas");
 }
 
@@ -97,9 +100,21 @@ export async function CreateClass(baseFilePath: string, baseFileName: string) {
 		placeHolder: "Enter the name of file you want to create"
 	});
 	if (CheckInput(className)) return;
+	const result = CheckFileInput(className);
+	if (result) {
+		vscode.window.showErrorMessage(result)
+		return;
+	}
 	className = className + "";
-	if (CheckPath(path.join(project.path, "src", className + ".h"), "A class named " + className + " already exist!", false)) return;
-	if (CheckPath(path.join(project.path, "src", className + ".cpp"), "A class named " + className + " already exist!", false)) return;
+	className = className.trim()
+	if(!fs.existsSync(path.join(project.path, "src"))) {
+		vscode.window.showErrorMessage("src folder does not exists!");
+		return;
+	}
+	if (fs.existsSync(path.join(project.path, "src", className + ".h")) || fs.existsSync(path.join(project.path, "src", className + ".cpp"))) {
+		vscode.window.showErrorMessage("A class named " + className + " already exist!");
+		return;
+	}
 
 	fs.copyFileSync(path.join(baseFilePath, baseFileName + ".h"), path.join(project.path, "src", className + ".h"));
 	fs.copyFileSync(path.join(baseFilePath, baseFileName + ".cpp"), path.join(project.path, "src", className + ".cpp"));
@@ -122,37 +137,39 @@ function GetSubFiles(directory: string): string[] {
 	});
 }
 
-function GetBaseNameWithoutExtension(filePath: string): string {
-	const baseName = path.basename(filePath);
-	const extension = path.extname(baseName);
-	return baseName.slice(0, -extension.length);
-}
-
 export async function DeleteClassFromProject() {
 	if (!WorkspaceProcesses.IsUserInWorkspace()) return;
 
 	let project = await QuickPickFromWorkspaceFolders();
 	if (!project) return;
 	let fileList: string[] = [];
+	if(!fs.existsSync(path.join(project.path, "src"))) {
+		vscode.window.showErrorMessage("src does not exists!");
+		return;
+	}
 	GetSubFiles(path.join(project.path, "src")).forEach(file => {
-		if (!fileList.includes(GetBaseNameWithoutExtension(file)) && GetBaseNameWithoutExtension(file) != "main") {
-			fileList.push(GetBaseNameWithoutExtension(file));
+		if (!fileList.includes(path.parse(file).name) && path.parse(file).name != "main") {
+			fileList.push(path.parse(file).name);
 		}
 	});
 	let className = await vscode.window.showQuickPick(fileList, { title: "Select the class you want to delete." });
 	if (CheckInput(className)) return;
 	className = className + "";
-	if (CheckPath(path.join(project.path, "src", className + ".h"), "A class named " + className + " does not exist!")) return;
-	if (CheckPath(path.join(project.path, "src", className + ".cpp"), "A class named " + className + " does not exist!")) return;
+	if (!fs.existsSync(path.join(project.path, "src", className + ".h")) || !path.join(project.path, "src", className + ".cpp")) {
+		vscode.window.showErrorMessage("A class named " + className + " does not exist!");
+		return;
+	}
 	let decision = await vscode.window.showInputBox({
-		placeHolder: 'Are you sure about deleting ' + className + '? Type "yes" to continue.'
+		placeHolder: `Are you sure about deleting ${className}? Type "${className}" to continue.`
 	});
-	if (!(decision?.toLowerCase() == "yes")) {
+	if (decision != className) {
 		vscode.window.showErrorMessage("Deleting Class Cancelled!");
 		return;
 	}
 	FileProcesses.RemoveFileFromCMakeLists(project.path, className);
-	await WorkspaceProcesses.CloseNonExistentFileTabs();
+	await FileProcesses.DeleteFile(path.join(project.path, 'src', `${className}.cpp`));
+	await FileProcesses.DeleteFile(path.join(project.path, 'src', `${className}.h`));
+	WorkspaceProcesses.CloseNonExistentFileTabs();
 }
 
 export function CheckInput(input: any, message: string = "No input provided."): Boolean {
@@ -163,14 +180,56 @@ export function CheckInput(input: any, message: string = "No input provided."): 
 	return false;
 }
 
-export function CheckPath(inputPath: any, message: any = undefined, errorMessageIfNotExist = true) {
-	if (!fs.existsSync(inputPath) && errorMessageIfNotExist) {
-		vscode.window.showErrorMessage(message);
-		return true;
+export function CheckFolderInput(input: any): string {
+	input = input.trim();
+	if (!input) {
+		return "Name cannot be empty.";
 	}
-	else if (fs.existsSync(inputPath) && errorMessageIfNotExist == false) {
-		vscode.window.showErrorMessage(message);
-		return true;
+
+	// Allow ONLY: A-Z a-z 0-9 space _ - .
+	const allowed = /^[A-Za-z0-9 _.-]+$/;
+
+	if (!allowed.test(input)) {
+		return "Only English letters, numbers, spaces, _, -, and . are allowed.";
 	}
-	return false;
+
+	// Windows reserved names
+	const reserved = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+	if (reserved.test(input)) {
+		return "This name is reserved by Windows.";
+	}
+
+	if (input.endsWith(".")) {
+		return "Name cannot end with a dot.";
+	}
+	return "";
+}
+
+export function CheckFileInput(input: any): string {
+	input = input.trim();
+	if (!input) {
+		return "Name cannot be empty.";
+	}
+
+	if (input.includes(" ")) {
+		return "Name cannot include spaces";
+	}
+
+	// Allow ONLY: A-Z a-z 0-9 space _
+	const allowed = /^[A-Za-z0-9 _]+$/;
+
+	if (!allowed.test(input)) {
+		return "Only English letters, numbers, spaces, and _ are allowed.";
+	}
+
+	// Windows reserved names
+	const reserved = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+	if (reserved.test(input)) {
+		return "This name is reserved by Windows.";
+	}
+
+	if (input.endsWith(".")) {
+		return "Name cannot end with a space or dot.";
+	}
+	return "";
 }

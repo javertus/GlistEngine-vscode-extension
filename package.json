@@ -1,10 +1,10 @@
 {
   "name": "glist-engine-extension",
   "displayName": "Glist Engine",
-  "description": "Configures the Visual Studio Code for Glist Engine and makes your job easier.",
+  "description": "Configures the Visual Studio Code for Glist Engine.",
   "publisher": "javertus",
   "icon": "images/icon.png",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/javertus/GlistEngine-vscode-extension.git"
@@ -141,8 +141,8 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "axios": "^1.13.5",
     "adm-zip": "^0.5.7",
+    "axios": "^1.13.5",
     "fs-extra": "^11.0.4",
     "json5": "^2.2.3",
     "rimraf": "^6.1.2",

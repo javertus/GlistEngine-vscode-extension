@@ -6,7 +6,7 @@ import axios from 'axios';
 import json5 from 'json5'
 import { execSync } from 'child_process';
 import * as WorkspaceProcesses from './WorkspaceProcesses'
-import { rimraf, rimrafSync } from 'rimraf';
+import { rimraf } from 'rimraf';
 import * as extension from './extension';
 import * as globals from './globals';
 
@@ -120,14 +120,7 @@ export function RemoveFileFromCMakeLists(projectPath: string, fileName: string) 
 			.join('\n');
 		data = data.replace(headersPattern, `set(GlistApp_HEADERS\n${newHeaders}\n)`);
 	}
-
 	fs.writeFileSync(cmakeListsPath, data, 'utf8');
-
-	// Delete the .cpp and .h files
-	const cppFilePath = path.join(projectPath, 'src', `${fileName}.cpp`);
-	const hFilePath = path.join(projectPath, 'src', `${fileName}.h`);
-	rimrafSync(cppFilePath);
-	rimrafSync(hFilePath);
 }
 
 
@@ -177,13 +170,23 @@ export function GetSubfolders(directory: string): string[] {
 }
 
 export async function DeleteFolder(folderPath: string) {
-	await rimraf(folderPath);
-	console.log(`Folder ${folderPath} deleted successfully.`);
+	try {
+		await rimraf(folderPath);
+		console.log(`Folder ${folderPath} deleted successfully.`);
+	}
+	catch (err) {
+		vscode.window.showErrorMessage(`Failed to deiete ${folderPath}`)
+	}
 }
 
 export async function DeleteFile(filePath: string) {
-	await rimraf(filePath);
-	console.log(`File ${filePath} deleted successfully.`);
+	try {
+		await rimraf(filePath);
+		console.log(`File ${filePath} deleted successfully.`);
+	}
+	catch (err) {
+		vscode.window.showErrorMessage(`Failed to deiete ${filePath}`)
+	}
 }
 
 

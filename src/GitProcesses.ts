@@ -202,7 +202,7 @@ export async function ClonePlugin() {
         const repoNames = response.data.map(repo => repo.name);
         selection = await vscode.window.showQuickPick(repoNames, { title: "Select the plugin you want to clone" });
         if (!selection) return;
-        await CloneRepository(globals.glistPluginsUrl + selection, globals.glistpluginsPath);
+        await CloneRepository(globals.glistpluginsUrl + selection, globals.glistpluginsPath);
     } catch (error) {
         if (error === "User Cancelled") {
             if (!selection) return;

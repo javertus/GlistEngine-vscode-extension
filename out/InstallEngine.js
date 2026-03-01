@@ -77,9 +77,10 @@ async function InstallGlistEngine(consent = '') {
                 progress.report({ increment: 20 });
                 await InstallClang(progress);
                 progress.report({ increment: 20 });
-                await createEmptyProject();
+                await CreateEmptyProject();
                 progress.report({ increment: 20 });
                 vscode.window.showInformationMessage("Glist Engine Installed Successfully.");
+                await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
                 installation = false;
             }
             catch (err) {
@@ -113,7 +114,7 @@ async function InstallClang(progress) {
     await fs.remove(path.join(globals.glistZbinWindowsPath, 'clang64'));
     FileProcesses.ExtractArchive(zipFilePath, globals.glistZbinWindowsPath, "Binaries Installed.");
 }
-async function createEmptyProject() {
+async function CreateEmptyProject() {
     vscode.window.showInformationMessage("Creating Empty Project");
     ProjectProcesses.CreateNewProject("GlistApp");
 }

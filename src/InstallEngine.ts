@@ -15,7 +15,7 @@ export async function InstallGlistEngine(consent: any = '') {
 		return;
 	}
 
-	if(!consent) consent = await vscode.window.showInformationMessage(
+	if (!consent) consent = await vscode.window.showInformationMessage(
 		'This action will install the Glist Engine and its dependencies. Current Glist Engine installation in /dev/glist folder will be modified if exists. Your projects and plugins will not be affected. Do you want to continue?',
 		{ modal: true },
 		'Yes',
@@ -47,9 +47,10 @@ export async function InstallGlistEngine(consent: any = '') {
 				progress.report({ increment: 20 });
 				await InstallClang(progress);
 				progress.report({ increment: 20 });
-				await createEmptyProject();
+				await CreateEmptyProject();
 				progress.report({ increment: 20 });
 				vscode.window.showInformationMessage("Glist Engine Installed Successfully.");
+				await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(globals.workspaceFilePath), false);
 				installation = false;
 			}
 			catch (err) {
@@ -88,7 +89,7 @@ async function InstallClang(progress: vscode.Progress<{ message: string, increme
 	FileProcesses.ExtractArchive(zipFilePath, globals.glistZbinWindowsPath, "Binaries Installed.");
 }
 
-async function createEmptyProject() {
+async function CreateEmptyProject() {
 	vscode.window.showInformationMessage("Creating Empty Project");
 	ProjectProcesses.CreateNewProject("GlistApp");
 }

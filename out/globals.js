@@ -33,13 +33,13 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.vscodeSettingsPath = exports.GLISTENGINE_SETTINGS = exports.vscodeSettings = exports.ninjaUrl = exports.gitUrl = exports.glistCmakeUrl = exports.glistClangUrl = exports.glistEngineUrl = exports.pluginReposUrl = exports.glistPluginsUrl = exports.glistAppUrl = exports.glistPath = exports.glistpluginsPath = exports.workspaceFilePath = exports.glistZbinWindowsPath = exports.glistZbinRootPath = exports.glistEngineRootPath = exports.glistEnginePath = exports.glistappsPath = exports.tempPath = exports.currentDrive = void 0;
+exports.vscodeSettingsPath = exports.GLISTENGINE_SETTINGS = exports.vscodeSettings = exports.ninjaUrl = exports.gitUrl = exports.glistCmakeUrl = exports.glistClangUrl = exports.glistEngineUrl = exports.pluginReposUrl = exports.glistpluginsUrl = exports.glistappUrl = exports.glistPath = exports.glistpluginsPath = exports.workspaceFilePath = exports.glistZbinWindowsPath = exports.glistZbinRootPath = exports.glistEngineRootPath = exports.glistEnginePath = exports.glistappsPath = exports.tempPath = exports.currentDrive = void 0;
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
 const FileProcesses = __importStar(require("./FileProcesses"));
 exports.currentDrive = FileProcesses.GetGlistDrive();
 exports.tempPath = path.join(os.tmpdir(), "GlistVSCodeInstaller");
-exports.glistappsPath = path.join(exports.currentDrive, "\\dev\\glist\\myglistapps\\");
+exports.glistappsPath = path.join(exports.currentDrive, "\\dev\\glist\\myglistapps");
 exports.glistEnginePath = path.join(exports.currentDrive, "\\dev\\glist\\GlistEngine\\engine");
 exports.glistEngineRootPath = path.join(exports.currentDrive, "\\dev\\glist\\GlistEngine");
 exports.glistZbinRootPath = path.join(exports.currentDrive, "\\dev\\glist\\zbin");
@@ -47,9 +47,9 @@ exports.glistZbinWindowsPath = path.join(exports.currentDrive, "\\dev\\glist\\zb
 exports.workspaceFilePath = path.join(exports.currentDrive, "\\dev\\glist\\Glist.code-workspace");
 exports.glistpluginsPath = path.join(exports.currentDrive, "\\dev\\glist\\glistplugins");
 exports.glistPath = path.join(exports.currentDrive, "\\dev\\glist");
-exports.glistAppUrl = "https://github.com/javertus/GlistApp-vscode";
-exports.glistPluginsUrl = "https://github.com/GlistPlugins/";
-exports.pluginReposUrl = `https://api.github.com/orgs/GlistPlugins/repos`;
+exports.glistappUrl = "https://github.com/javertus/GlistApp-vscode";
+exports.glistpluginsUrl = "https://github.com/GlistPlugins/";
+exports.pluginReposUrl = `https://api.github.com/orgs/GlistPlugins/repos?per_page=999`;
 exports.glistEngineUrl = "https://github.com/GlistEngine/GlistEngine";
 exports.glistClangUrl = "https://github.com/javertus/glistzbin-win64-vscode/releases/download/Dependencies/clang64.zip";
 exports.glistCmakeUrl = "https://github.com/javertus/glistzbin-win64-vscode/releases/download/Dependencies/CMake.zip";
@@ -57,9 +57,6 @@ exports.gitUrl = "https://github.com/git-for-windows/git/releases/download/v2.45
 exports.ninjaUrl = "https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip";
 exports.vscodeSettings = {
     "extensions.ignoreRecommendations": true,
-    /*"cmake.options.statusBarVisibility": "visible",
-    "cmake.showOptionsMovedNotification": false,
-    "cmake.configureOnOpen": true,*/
     "security.workspace.trust.enabled": false,
     "security.workspace.trust.banner": "never",
     "security.workspace.trust.untrustedFiles": "open",
